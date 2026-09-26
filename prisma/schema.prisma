@@ -1,0 +1,154 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  EMPLOYEE
+}
+
+enum MaterialKind {
+  PDF
+  IMAGE
+}
+
+enum Visibility {
+  ALL
+  DEPARTMENTS
+}
+
+model Department {
+  id        String               @id @default(cuid())
+  name      String               @unique
+  slug      String               @unique
+  users     User[]
+  materials MaterialDepartment[]
+  createdAt DateTime             @default(now())
+}
+
+model User {
+  id                 String                @id @default(cuid())
+  name               String
+  email              String                @unique
+  passwordHash       String
+  role               Role                  @default(EMPLOYEE)
+  departmentId       String?
+  department         Department?           @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  employeeCode       String?               @unique
+  designation        String?
+  phone              String?
+  isActive           Boolean               @default(true)
+  mustChangePassword Boolean               @default(false)
+  lastLoginAt        DateTime?
+  sessions           Session[]
+  resetTokens        PasswordResetToken[]
+  uploads            Material[]            @relation("UploadedBy")
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+
+  @@index([departmentId])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  expiresAt DateTime
+  ip        String?
+  userAgent String?  @db.Text
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+}
+
+model LoginAttempt {
+  id        String   @id @default(cuid())
+  email     String
+  ip        String
+  success   Boolean
+  createdAt DateTime @default(now())
+
+  @@index([email, createdAt])
+  @@index([ip, createdAt])
+}
+
+model Category {
+  id        String     @id @default(cuid())
+  name      String     @unique
+  slug      String     @unique
+  sortOrder Int        @default(0)
+  materials Material[]
+}
+
+model Material {
+  id           String               @id @default(cuid())
+  title        String
+  description  String?              @db.Text
+  kind         MaterialKind
+  storageKey   String               @unique // uuid filename on disk, e.g. "9f1c….pdf"
+  originalName String
+  mimeType     String
+  sizeBytes    Int
+  categoryId   String?
+  category     Category?            @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  visibility   Visibility           @default(DEPARTMENTS)
+  departments  MaterialDepartment[]
+  uploadedById String?
+  uploadedBy   User?                @relation("UploadedBy", fields: [uploadedById], references: [id], onDelete: SetNull)
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  @@index([categoryId])
+  @@index([visibility])
+}
+
+model MaterialDepartment {
+  materialId   String
+  departmentId String
+  material     Material   @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+
+  @@id([materialId, departmentId])
+  @@index([departmentId])
+}
+
+model ContactEnquiry {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  subject   String?
+  message   String   @db.Text
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String // "material.upload", "employee.delete", "auth.login", …
+  entity    String
+  entityId  String?
+  meta      Json?
+  ip        String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
