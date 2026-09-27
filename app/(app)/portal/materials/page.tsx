@@ -6,7 +6,7 @@ import { listVisibleMaterials } from "@/lib/queries/materials";
 import { prisma } from "@/lib/db/prisma";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "cn";
-import { MaterialsFilterBar } from "./materials-filter-bar";
+import { MaterialsFilterBar } from "@/components/materials-filter-bar";
 
 export const metadata: Metadata = {
   title: "Materials",

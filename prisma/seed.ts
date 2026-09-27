@@ -1,5 +1,9 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+// Relative import, not "@/lib/slugify" — this file runs via plain `node
+// prisma/seed.ts`, which doesn't understand the tsconfig "@/*" alias (only Next's own
+// bundler does).
+import { slugify } from "../lib/slugify.ts";
 
 const prisma = new PrismaClient();
 
@@ -11,10 +15,6 @@ const CATEGORIES = [
   "Circulars",
   "Photos",
 ];
-
-function slugify(name: string): string {
-  return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-}
 
 async function main() {
   const isProduction = process.env.NODE_ENV === "production";

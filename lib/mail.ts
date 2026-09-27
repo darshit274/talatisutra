@@ -109,3 +109,35 @@ export async function sendContactEnquiryEmail(enquiry: ContactEnquiryDetails): P
     ),
   });
 }
+
+export async function sendNewAccountEmail(to: string, tempPassword: string): Promise<void> {
+  await safeSend({
+    to,
+    subject: "Your employee portal account",
+    html: emailShell(
+      "Your account is ready",
+      `
+        <p style="margin: 0 0 16px; color: #333;">
+          An administrator created an employee portal account for you. Sign in with
+          the temporary password below — you'll be asked to set your own the first
+          time you log in.
+        </p>
+        <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 0 16px;">
+          <tr>
+            <td style="padding: 4px 12px 4px 0; color: #666; font-size: 13px;">Email</td>
+            <td style="padding: 4px 0; color: #111; font-size: 13px;">${escapeHtml(to)}</td>
+          </tr>
+          <tr>
+            <td style="padding: 4px 12px 4px 0; color: #666; font-size: 13px;">Temporary password</td>
+            <td style="padding: 4px 0; color: #111; font-size: 13px; font-family: monospace;">${escapeHtml(tempPassword)}</td>
+          </tr>
+        </table>
+        <p style="margin: 0;">
+          <a href="${env.APP_URL}/login" style="display:inline-block;background:#111;color:#fff;padding:10px 20px;border-radius:6px;text-decoration:none;">
+            Sign in
+          </a>
+        </p>
+      `,
+    ),
+  });
+}

@@ -11,6 +11,11 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
+    // Lets prisma/seed.ts (run directly via `node`, not Next's bundler) import
+    // ../lib/*.ts with an explicit .ts extension, which Node's native TS execution
+    // requires but Next's own app code never needs (it uses the "@/*" alias instead).
+    // Safe alongside noEmit.
+    "allowImportingTsExtensions": true,
     "jsx": "react-jsx",
     "incremental": true,
     "plugins": [
