@@ -20,6 +20,15 @@ async function safeSend(options: Parameters<typeof transporter.sendMail>[0]): Pr
   }
 }
 
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function emailShell(title: string, bodyHtml: string): string {
   return `
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
@@ -52,6 +61,50 @@ export async function sendPasswordResetEmail(to: string, resetUrl: string): Prom
         <p style="margin: 0; color: #666; font-size: 13px;">
           If you didn't request this, you can safely ignore this email.
         </p>
+      `,
+    ),
+  });
+}
+
+export interface ContactEnquiryDetails {
+  name: string;
+  email: string;
+  phone?: string;
+  subject?: string;
+  message: string;
+}
+
+export async function sendContactEnquiryEmail(enquiry: ContactEnquiryDetails): Promise<void> {
+  const rows = [
+    ["Name", enquiry.name],
+    ["Email", enquiry.email],
+    ["Phone", enquiry.phone || "—"],
+    ["Subject", enquiry.subject || "—"],
+  ]
+    .map(
+      ([label, value]) => `
+        <tr>
+          <td style="padding: 4px 12px 4px 0; color: #666; font-size: 13px; white-space: nowrap;">${label}</td>
+          <td style="padding: 4px 0; color: #111; font-size: 13px;">${escapeHtml(value)}</td>
+        </tr>
+      `,
+    )
+    .join("");
+
+  await safeSend({
+    to: env.CONTACT_NOTIFY_EMAIL,
+    // Replying in the mail client goes straight to the enquirer, not MAIL_FROM
+    // (BUILD-PLAN §8).
+    replyTo: enquiry.email,
+    subject: enquiry.subject ? `Contact form: ${enquiry.subject}` : "New contact form enquiry",
+    html: emailShell(
+      "New contact enquiry",
+      `
+        <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 0 16px;">
+          ${rows}
+        </table>
+        <p style="margin: 0 0 8px; color: #666; font-size: 13px;">Message</p>
+        <p style="margin: 0; color: #111; white-space: pre-wrap;">${escapeHtml(enquiry.message)}</p>
       `,
     ),
   });

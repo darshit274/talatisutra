@@ -47,3 +47,25 @@ export async function isPasswordResetThrottled(email: string, ip: string): Promi
 export async function recordPasswordResetRequest(email: string, ip: string): Promise<void> {
   await prisma.loginAttempt.create({ data: { email, ip, success: true, kind: "PASSWORD_RESET" } });
 }
+
+/**
+ * Same 5-per-15-minutes window applied to /contact (BUILD-PLAN §4 fix #6), so the
+ * public contact form can't be used to flood an inbox or hammer SMTP. As with
+ * /forgot-password, every submission counts — there's no success/failure distinction.
+ */
+export async function isContactFormThrottled(email: string, ip: string): Promise<boolean> {
+  const since = windowStart();
+  const [byEmail, byIp] = await Promise.all([
+    prisma.loginAttempt.count({
+      where: { kind: "CONTACT_FORM", email, createdAt: { gte: since } },
+    }),
+    prisma.loginAttempt.count({
+      where: { kind: "CONTACT_FORM", ip, createdAt: { gte: since } },
+    }),
+  ]);
+  return byEmail >= MAX_ATTEMPTS || byIp >= MAX_ATTEMPTS;
+}
+
+export async function recordContactFormSubmission(email: string, ip: string): Promise<void> {
+  await prisma.loginAttempt.create({ data: { email, ip, success: true, kind: "CONTACT_FORM" } });
+}

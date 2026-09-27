@@ -220,6 +220,7 @@ model PasswordResetToken {
 enum LoginAttemptKind {
   LOGIN
   PASSWORD_RESET
+  CONTACT_FORM
 }
 
 model LoginAttempt {
