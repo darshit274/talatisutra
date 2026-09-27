@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `loginattempt` ADD COLUMN `kind` ENUM('LOGIN', 'PASSWORD_RESET') NOT NULL DEFAULT 'LOGIN';

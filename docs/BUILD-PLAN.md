@@ -217,12 +217,18 @@ model PasswordResetToken {
   createdAt DateTime @default(now())
 }
 
+enum LoginAttemptKind {
+  LOGIN
+  PASSWORD_RESET
+}
+
 model LoginAttempt {
-  id        String   @id @default(cuid())
+  id        String           @id @default(cuid())
   email     String
   ip        String
   success   Boolean
-  createdAt DateTime @default(now())
+  kind      LoginAttemptKind @default(LOGIN) // lets /forgot-password reuse this table
+  createdAt DateTime         @default(now())
 
   @@index([email, createdAt])
   @@index([ip, createdAt])

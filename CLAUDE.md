@@ -19,6 +19,8 @@ starting any phase.
 - shadcn's `form` component has no implementation yet for the `base-nova` style (empty
   registry stub) — build forms with `react-hook-form` + `@hookform/resolvers` (both
   installed) directly against `input`/`label`/`select`/etc., not a `<Form>` wrapper.
+- `bcryptjs` and `nodemailer` ship their own TypeScript types now; skip
+  `@types/bcryptjs` / `@types/nodemailer` from BUILD-PLAN §2, they're unneeded.
 - Custom database-backed sessions (no Auth.js — see BUILD-PLAN §4 for why)
 - Nodemailer over SMTP on the client's own domain
 - Deployed to a Hostinger KVM VPS behind Nginx, run under PM2
