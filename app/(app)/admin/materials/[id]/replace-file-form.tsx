@@ -49,7 +49,14 @@ export function ReplaceFileForm({ materialId }: { materialId: string }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-2">
+    // Fallback method/action/encType, same reasoning as the upload form.
+    <form
+      onSubmit={handleSubmit}
+      method="post"
+      action={`/api/materials/${materialId}/replace`}
+      encType="multipart/form-data"
+      className="flex flex-wrap items-end gap-2"
+    >
       <div className="space-y-2">
         <Label htmlFor="replace-file">New file</Label>
         <Input id="replace-file" name="file" type="file" accept=".pdf,.png,.jpg,.jpeg,.webp" />

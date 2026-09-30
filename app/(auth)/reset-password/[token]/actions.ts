@@ -1,11 +1,14 @@
 "use server";
 
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db/prisma";
 import { hashPassword } from "@/lib/auth/password";
 import { hashToken } from "@/lib/auth/tokens";
 import { destroyAllSessionsForUser } from "@/lib/auth/session";
+import { getClientIp } from "@/lib/auth/ip";
 import { resetPasswordSchema } from "@/lib/validation/auth";
+import { writeAuditLog } from "@/lib/audit";
 
 export interface ResetPasswordState {
   error?: string;
@@ -33,6 +36,7 @@ export async function resetPassword(
 
   const resetToken = await prisma.passwordResetToken.findUnique({
     where: { tokenHash: hashToken(token) },
+    include: { user: true },
   });
 
   if (!resetToken || resetToken.usedAt !== null || resetToken.expiresAt < new Date()) {
@@ -54,6 +58,14 @@ export async function resetPassword(
 
   // Using the link kills every existing session for the account (BUILD-PLAN §4).
   await destroyAllSessionsForUser(resetToken.userId);
+
+  await writeAuditLog({
+    actor: resetToken.user,
+    action: "auth.password_reset",
+    entity: "User",
+    entityId: resetToken.userId,
+    ip: getClientIp(await headers()),
+  });
 
   redirect("/login?reset=success");
 }

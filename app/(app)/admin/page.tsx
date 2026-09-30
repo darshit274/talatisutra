@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import { requireAdmin } from "@/lib/auth/session";
 import { getAdminDashboardSummary } from "@/lib/queries/admin";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DashboardCharts } from "./_components/dashboard-charts";
 
 export const metadata: Metadata = {
   title: "Admin",
@@ -40,6 +41,12 @@ export default async function AdminDashboardPage() {
           </Card>
         ))}
       </div>
+
+      <DashboardCharts
+        employeesByDepartment={summary.employeesByDepartment}
+        materialsByCategory={summary.materialsByCategory}
+        activityByDay={summary.activityByDay}
+      />
 
       <div>
         <h2 className="text-lg font-medium">Recent activity</h2>

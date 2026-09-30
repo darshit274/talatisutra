@@ -30,9 +30,17 @@ starting any phase.
 1. **Uploaded files never live under `public/`.** They go in `STORAGE_DIR`, outside the
    repo, and are served only through `GET /api/materials/[id]/file` after an auth and
    department check. A file must never be reachable by guessing a URL.
-2. **Every protected page and route handler re-checks the session server-side.**
-   `middleware.ts` only does a cheap cookie-presence redirect; it is not an
-   authorisation boundary. Prisma cannot run in edge middleware.
+2. **Every protected page and route handler re-checks the session server-side**, via
+   `requireUser()` / `requireAdmin()` in the page or route itself. There is no
+   `proxy.ts` (Next 16's renamed `middleware.ts`) doing a cheap edge-redirect in front
+   of these routes — it was removed entirely during Phase 6. Next.js 16.3.6 has a
+   confirmed bug where a `proxy.ts`/middleware matching any route breaks Server Action
+   body parsing in production (reproduced with a minimal test case; narrowing the
+   matcher, including excluding Server Action requests via a `missing` header
+   condition, does not help). Since Prisma can't run in edge middleware anyway, a
+   proxy-level redirect was only ever a cheap UX nicety, never the authorisation
+   boundary — so removing it changes nothing about the security model, only the
+   Server Action reliability.
 3. **Never trust a role, department or user id coming from the client.** Read them from
    the session row, always.
 4. **Admin-only routes check `role === 'ADMIN'` in the route itself**, not just in the

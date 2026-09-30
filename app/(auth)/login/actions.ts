@@ -8,6 +8,7 @@ import { createSession } from "@/lib/auth/session";
 import { getClientIp } from "@/lib/auth/ip";
 import { isLoginThrottled, recordLoginAttempt } from "@/lib/auth/throttle";
 import { loginSchema } from "@/lib/validation/auth";
+import { writeAuditLog } from "@/lib/audit";
 
 export interface LoginState {
   error?: string;
@@ -54,6 +55,7 @@ export async function login(_prevState: LoginState, formData: FormData): Promise
 
   await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
   await createSession(user.id, ip, headersList.get("user-agent"));
+  await writeAuditLog({ actor: user, action: "auth.login", entity: "User", entityId: user.id, ip });
 
   if (user.mustChangePassword) {
     redirect("/change-password");

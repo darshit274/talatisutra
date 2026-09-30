@@ -1,10 +1,13 @@
 "use server";
 
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db/prisma";
 import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import { requireUserForPasswordChange } from "@/lib/auth/session";
+import { getClientIp } from "@/lib/auth/ip";
 import { changePasswordSchema } from "@/lib/validation/auth";
+import { writeAuditLog } from "@/lib/audit";
 
 export interface ChangePasswordState {
   error?: string;
@@ -38,6 +41,14 @@ export async function changePassword(
   await prisma.user.update({
     where: { id: user.id },
     data: { passwordHash, mustChangePassword: false },
+  });
+
+  await writeAuditLog({
+    actor: user,
+    action: "auth.change_password",
+    entity: "User",
+    entityId: user.id,
+    ip: getClientIp(await headers()),
   });
 
   redirect(dbUser.role === "ADMIN" ? "/admin" : "/portal");

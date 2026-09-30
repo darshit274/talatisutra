@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Employee Portal
 
-## Getting Started
+Internal employee portal built for an office client by Viewebit. Five public
+information pages plus a login-protected materials library (PDFs and images) and an
+admin dashboard.
 
-First, run the development server:
+The full functional/security specification lives in [`docs/BUILD-PLAN.md`](docs/BUILD-PLAN.md).
+Project-specific rules and conventions (things that aren't obvious from the code) live
+in [`CLAUDE.md`](CLAUDE.md). Read both before making structural changes.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Stack
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- Next.js 16.3.6 (App Router) + React 19.2.8 + TypeScript
+- Tailwind CSS v4 + shadcn/ui (`base-nova` style, built on `@base-ui/react`)
+- MySQL via Prisma **6.19.3** (pinned — see `CLAUDE.md` before bumping)
+- Custom database-backed sessions (no Auth.js)
+- Nodemailer over SMTP for contact/reset/new-account email
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Local setup
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+2. Copy `.env.example` to `.env` and fill in the values (a local MySQL instance,
+   a generated `SESSION_SECRET`, and a `STORAGE_DIR` path *outside* the repo for
+   uploaded files — see the comments in `.env.example`).
+3. Run migrations and seed the database:
+   ```bash
+   npx prisma migrate dev
+   npm run db:seed
+   ```
+4. Start the dev server:
+   ```bash
+   npm run dev
+   ```
+   Open [http://localhost:3000](http://localhost:3000). Sign in with the
+   `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` you set in `.env`.
 
-## Learn More
+## Scripts
 
-To learn more about Next.js, take a look at the following resources:
+| Command | Purpose |
+|---|---|
+| `npm run dev` | Development server (Fast Refresh, no security headers) |
+| `npm run build` | Production build |
+| `npm run start` | Serve the production build (`npm run build` first) |
+| `npm run lint` | ESLint |
+| `npm run db:seed` | Re-run `prisma/seed.ts` |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Before committing, run `npx tsc --noEmit`, `npm run lint`, and `npm run build` —
+CI-equivalent local validation.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Notable architecture decisions
 
-## Deploy on Vercel
+- **No `proxy.ts` / middleware.** Every protected page and route handler re-checks the
+  session server-side via `requireUser()` / `requireAdmin()`. A proxy-level redirect was
+  only ever a cheap UX nicety (Prisma can't run in edge middleware anyway), and Next.js
+  16.3.6 has a confirmed bug where any proxy/middleware matching a route breaks Server
+  Action body parsing in production — see `CLAUDE.md` rule 2.
+- **CSP allows `'unsafe-inline'` for scripts.** Required for Next's own RSC/hydration
+  data (`self.__next_f.push(...)`) to run — without it, React silently fails to hydrate
+  any page in production. See `docs/BUILD-PLAN.md` §9 for the full explanation.
+- **Uploaded files are never under `public/`.** They live in `STORAGE_DIR`, outside the
+  repo, and are served only through an authenticated route handler.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Deployment
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Deployment (Hostinger KVM VPS, Nginx, PM2, certbot, backups) is covered by
+`docs/BUILD-PLAN.md` §14. A dedicated `docs/DEPLOY.md` is a Phase 7 deliverable and not
+yet written.

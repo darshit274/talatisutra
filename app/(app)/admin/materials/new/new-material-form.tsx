@@ -46,11 +46,12 @@ export function NewMaterialForm({
       return;
     }
 
+    // The hidden visibility input and each checked department checkbox already carry
+    // a real name/value (Base UI's Checkbox renders a native hidden input for form
+    // participation), so a plain FormData(form) read picks all of this up correctly —
+    // no need to also re-append selectedDepartments by hand.
     const formData = new FormData(form);
     formData.set("visibility", restricted ? "DEPARTMENTS" : "ALL");
-    for (const id of selectedDepartments) {
-      formData.append("departmentIds", id);
-    }
 
     if (restricted && selectedDepartments.length === 0) {
       setError("Pick at least one department, or leave it unrestricted.");
@@ -76,7 +77,18 @@ export function NewMaterialForm({
   }
 
   return (
-    <form ref={formRef} onSubmit={handleSubmit} className="max-w-xl space-y-4">
+    // method/action/encType are a fallback only — if a click ever lands before React
+    // hydrates and attaches onSubmit, the browser still POSTs correctly to the right
+    // endpoint instead of silently GET-reloading this page with the fields as a query
+    // string.
+    <form
+      ref={formRef}
+      onSubmit={handleSubmit}
+      method="post"
+      action="/api/materials/upload"
+      encType="multipart/form-data"
+      className="max-w-xl space-y-4"
+    >
       <div className="space-y-2">
         <Label htmlFor="title">Title</Label>
         <Input id="title" name="title" required />
@@ -109,6 +121,10 @@ export function NewMaterialForm({
         <Input id="file" name="file" type="file" accept=".pdf,.png,.jpg,.jpeg,.webp" required />
       </div>
 
+      {/* Static default so a native-fallback submit (JS handler not yet attached) still
+          passes validation — the JS handler overwrites this via formData.set() before
+          the real fetch. */}
+      <input type="hidden" name="visibility" value={restricted ? "DEPARTMENTS" : "ALL"} />
       <div className="space-y-3 rounded-lg border p-4">
         <div className="flex items-center gap-2">
           <Checkbox
@@ -125,6 +141,8 @@ export function NewMaterialForm({
               <div key={department.id} className="flex items-center gap-2">
                 <Checkbox
                   id={`dept-${department.id}`}
+                  name="departmentIds"
+                  value={department.id}
                   checked={selectedDepartments.includes(department.id)}
                   onCheckedChange={(checked) => toggleDepartment(department.id, checked)}
                 />

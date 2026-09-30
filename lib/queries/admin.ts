@@ -1,4 +1,5 @@
 import type { Prisma } from "@prisma/client";
+import { format, startOfDay, subDays } from "date-fns";
 import { prisma } from "@/lib/db/prisma";
 
 export interface AdminDashboardSummary {
@@ -14,17 +15,57 @@ export interface AdminDashboardSummary {
     actorName: string | null;
     createdAt: Date;
   }>;
+  employeesByDepartment: Array<{ name: string; count: number }>;
+  materialsByCategory: Array<{ name: string; count: number }>;
+  activityByDay: Array<{ date: string; count: number }>;
 }
 
+const ACTIVITY_CHART_DAYS = 7;
+
 export async function getAdminDashboardSummary(): Promise<AdminDashboardSummary> {
-  const [employeeCount, activeEmployeeCount, materialCount, unreadEnquiryCount, auditRows] =
-    await Promise.all([
-      prisma.user.count({ where: { role: "EMPLOYEE" } }),
-      prisma.user.count({ where: { role: "EMPLOYEE", isActive: true } }),
-      prisma.material.count(),
-      prisma.contactEnquiry.count({ where: { isRead: false } }),
-      prisma.auditLog.findMany({ orderBy: { createdAt: "desc" }, take: 10 }),
-    ]);
+  // Bucketed by local calendar day (date-fns, not toISOString — that's UTC, which
+  // shifts every bucket by a day for any timezone behind UTC and misplaces "today").
+  const activitySince = startOfDay(subDays(new Date(), ACTIVITY_CHART_DAYS - 1));
+
+  const [
+    employeeCount,
+    activeEmployeeCount,
+    materialCount,
+    unreadEnquiryCount,
+    auditRows,
+    departments,
+    categories,
+    recentAuditForChart,
+  ] = await Promise.all([
+    prisma.user.count({ where: { role: "EMPLOYEE" } }),
+    prisma.user.count({ where: { role: "EMPLOYEE", isActive: true } }),
+    prisma.material.count(),
+    prisma.contactEnquiry.count({ where: { isRead: false } }),
+    prisma.auditLog.findMany({ orderBy: { createdAt: "desc" }, take: 10 }),
+    prisma.department.findMany({
+      orderBy: { name: "asc" },
+      select: { name: true, _count: { select: { users: { where: { role: "EMPLOYEE" } } } } },
+    }),
+    prisma.category.findMany({
+      orderBy: { name: "asc" },
+      select: { name: true, _count: { select: { materials: true } } },
+    }),
+    prisma.auditLog.findMany({
+      where: { createdAt: { gte: activitySince } },
+      select: { createdAt: true },
+    }),
+  ]);
+
+  const dayBuckets = new Map<string, number>();
+  for (let i = 0; i < ACTIVITY_CHART_DAYS; i++) {
+    dayBuckets.set(format(subDays(new Date(), ACTIVITY_CHART_DAYS - 1 - i), "yyyy-MM-dd"), 0);
+  }
+  for (const row of recentAuditForChart) {
+    const key = format(row.createdAt, "yyyy-MM-dd");
+    if (dayBuckets.has(key)) {
+      dayBuckets.set(key, (dayBuckets.get(key) ?? 0) + 1);
+    }
+  }
 
   return {
     employeeCount,
@@ -41,6 +82,9 @@ export async function getAdminDashboardSummary(): Promise<AdminDashboardSummary>
       actorName: (row.meta as { actorName?: string } | null)?.actorName ?? null,
       createdAt: row.createdAt,
     })),
+    employeesByDepartment: departments.map((d) => ({ name: d.name, count: d._count.users })),
+    materialsByCategory: categories.map((c) => ({ name: c.name, count: c._count.materials })),
+    activityByDay: [...dayBuckets.entries()].map(([date, count]) => ({ date, count })),
   };
 }
 

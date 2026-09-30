@@ -8,9 +8,14 @@ import { env } from "@/lib/env";
  * TRUST_PROXY_HOPS positions from the RIGHT of that header — never the left-most
  * value, which any client can set to anything.
  *
- * With TRUST_PROXY_HOPS=0 (local dev, no proxy in front of Node), we don't trust the
- * header at all and fall back to a fixed value — there is no reliable way to read the
- * raw socket address from within a Server Action/Route Handler.
+ * With TRUST_PROXY_HOPS=0 (local dev, no proxy in front of Node), we deliberately
+ * don't read X-Forwarded-For at all and fall back to a fixed value instead — not
+ * because the header is unavailable (Next's own server actually fills it in with the
+ * real socket address when a client sends none, which is convenient but version- and
+ * platform-specific behavior, not a documented contract) but because trusting *any*
+ * forwarded header by default, before an operator has confirmed a real proxy sits in
+ * front and is the one setting it, is the wrong default: it would let a request
+ * straight from the internet claim whatever IP it likes.
  */
 export function getClientIp(headersList: Headers): string {
   const hops = env.TRUST_PROXY_HOPS;

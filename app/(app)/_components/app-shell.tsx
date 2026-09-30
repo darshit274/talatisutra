@@ -11,6 +11,7 @@ import {
   Users,
   Mail,
   Home,
+  UserCircle,
   Menu,
   X,
 } from "lucide-react";
@@ -22,6 +23,7 @@ import { logout } from "../actions";
 const PORTAL_LINKS = [
   { href: "/portal", label: "Home", icon: Home },
   { href: "/portal/materials", label: "Materials", icon: FolderOpen },
+  { href: "/profile", label: "Profile", icon: UserCircle },
 ];
 
 const ADMIN_LINKS = [
@@ -118,11 +120,16 @@ export function AppShell({ user, children }: { user: SessionUser | null; childre
           >
             {mobileOpen ? <X className="size-5" /> : <Menu className="size-5" />}
           </button>
-          <span className="font-semibold">Employee Portal</span>
+          <span className="font-semibold">{isAdmin ? "Admin Portal" : "Employee Portal"}</span>
         </div>
         {user ? (
           <div className="flex items-center gap-3 text-sm">
-            <span className="hidden text-muted-foreground sm:inline">{user.name}</span>
+            <Link
+              href="/profile"
+              className="hidden text-muted-foreground hover:text-foreground sm:inline"
+            >
+              {user.name}
+            </Link>
             <form action={logout}>
               <Button type="submit" variant="ghost" size="sm">
                 Sign out

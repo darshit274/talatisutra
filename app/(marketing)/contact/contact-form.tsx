@@ -12,18 +12,11 @@ const initialState: ContactState = { submitted: false };
 // Visually hidden, not tab-reachable, and out of the accessibility tree — a real
 // visitor (including one using a screen reader) never encounters this field. Zero
 // width/height + overflow hidden avoids the phantom-scrollbar bug that off-screen
-// absolute positioning can cause.
-const honeypotStyle: React.CSSProperties = {
-  position: "absolute",
-  width: 1,
-  height: 1,
-  padding: 0,
-  margin: -1,
-  overflow: "hidden",
-  whiteSpace: "nowrap",
-  border: 0,
-  clip: "rect(0,0,0,0)",
-};
+// absolute positioning can cause. Tailwind classes rather than an inline `style`
+// attribute, so this keeps working under a strict style-src CSP (§9) with no
+// 'unsafe-inline'.
+const HONEYPOT_CLASSES =
+  "absolute h-px w-px -m-px overflow-hidden border-0 p-0 whitespace-nowrap [clip:rect(0,0,0,0)]";
 
 export function ContactForm() {
   const [state, formAction, pending] = useActionState(submitContactForm, initialState);
@@ -41,7 +34,7 @@ export function ContactForm() {
 
   return (
     <form action={formAction} className="space-y-4">
-      <div style={honeypotStyle} aria-hidden="true">
+      <div className={HONEYPOT_CLASSES} aria-hidden="true">
         <label htmlFor="website">Website</label>
         <input id="website" name="website" type="text" tabIndex={-1} autoComplete="off" />
       </div>

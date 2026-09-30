@@ -36,6 +36,7 @@ zod
 bcryptjs @types/bcryptjs
 nodemailer @types/nodemailer
 date-fns
+recharts  # added post-Phase 6 for the admin dashboard charts, with explicit sign-off
 ```
 
 shadcn components expected: `button`, `input`, `label`, `textarea`, `select`, `table`,
@@ -425,13 +426,27 @@ Set these on every response, via `next.config.ts` `headers()` or middleware:
 - `Permissions-Policy: camera=(), microphone=(), geolocation=()`
 - `Strict-Transport-Security: max-age=63072000; includeSubDomains` (safe to send
   unconditionally once TLS is live in production — Nginx/certbot terminates it)
-- `Content-Security-Policy`, at minimum `default-src 'self'; frame-ancestors 'self'`
+- `Content-Security-Policy`, at minimum `default-src 'self'; script-src 'self'
+  'unsafe-inline'; frame-ancestors 'self'`
 
 **Do not set `X-Frame-Options: DENY` or `frame-ancestors 'none'` globally.**
 `/portal/materials/[id]` embeds the PDF viewer in a same-origin `<iframe>` pointed at
 `GET /api/materials/[id]/file`. `frame-ancestors 'self'` (or `X-Frame-Options: SAMEORIGIN`
 if using the header form instead of CSP) permits that same-origin embed while still
 blocking any other site from framing the portal.
+
+**`script-src` must include `'unsafe-inline'`.** Without it, the browser silently drops
+every `<script>self.__next_f.push(...)</script>` tag Next uses to stream RSC/hydration
+data into the page, so React never hydrates *any* route — every client component goes
+dead (dialogs, dropdowns, anything not a plain `<form>`) while native form submissions
+keep working via progressive enhancement, which masks the failure completely: pages look
+and mostly behave normally until you click something that only JS can handle. The
+browser throws `Minified React error #412` ("Connection closed") on every navigation
+when this happens. A nonce-based CSP would avoid `'unsafe-inline'`, but minting a
+per-request nonce needs `proxy.ts`/middleware, and this project has none — see §2 (CLAUDE.md
+rule 2) for why. `default-src 'self'` still blocks loading any *external* script, and
+`frame-ancestors` still blocks clickjacking, so the policy is still meaningfully
+restrictive without it.
 
 The file-streaming route keeps sending `Cache-Control: private, no-store` on top of these
 defaults (already required by §7), since it serves per-user content.
