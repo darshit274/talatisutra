@@ -48,7 +48,7 @@ starting any phase.
 5. **Disk filenames are random UUIDs.** Never write a user-supplied filename to disk, and
    never interpolate one into a path.
 6. **Validate uploads by magic bytes, not just the declared MIME type.** Allowed: PDF,
-   PNG, JPEG, WebP. Max 25 MB.
+   PNG, JPEG, WebP, DOC, DOCX. Max 25 MB.
 7. **Deactivating or deleting an employee deletes their sessions** so access is revoked
    immediately, not at token expiry.
 8. **Self-registered accounts require email verification before login** —
