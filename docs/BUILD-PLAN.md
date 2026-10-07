@@ -144,6 +144,29 @@ Admins can also set a password directly from the employee edit screen, which set
 `mustChangePassword = true`. When that flag is set, every portal route redirects to
 `/change-password` until it clears.
 
+### Self-registration and email verification
+
+`/register` creates a `User` row directly (`role: EMPLOYEE`, `departmentId: null`,
+`emailVerified: false`) and emails a 6-digit code via the existing SMTP config
+(`lib/mail.ts`'s `sendEmailOtp`) — no SMS/phone provider, by design (see
+`docs/superpowers/specs/2026-10-07-self-registration-design.md` for the full
+rationale). The code is hashed (`EmailOtp.codeHash`, same `hashToken()` helper as
+password-reset tokens) and expires in 10 minutes.
+
+`/verify-email` checks the code, marks the account verified, and auto-logs the user
+in. `/login` redirects any `emailVerified: false` account to `/verify-email` instead
+of creating a session, but still counts a correct password as a *successful* login
+attempt for throttling purposes.
+
+Self-registered accounts have no department and therefore only ever see materials
+with `visibility: "ALL"` (existing logic in `lib/queries/materials.ts` already
+handles `departmentId: null` this way — no change was needed there). There is no
+in-app path for a self-registered account to acquire a department; that remains
+admin-only, via the existing employee-edit form.
+
+Admin-created accounts (via `/admin/employees/new`) are unaffected: they get
+`emailVerified: true` at creation, since the admin already vouches for them.
+
 ---
 
 ## 5. Data model

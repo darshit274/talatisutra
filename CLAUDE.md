@@ -51,11 +51,17 @@ starting any phase.
    PNG, JPEG, WebP. Max 25 MB.
 7. **Deactivating or deleting an employee deletes their sessions** so access is revoked
    immediately, not at token expiry.
-8. **The site is internal.** Root metadata sets `robots: { index: false, follow: false }`
+8. **Self-registered accounts require email verification before login** —
+   `User.emailVerified` gates session creation in both `/login` and
+   `/verify-email`'s own action. They also have no department by construction
+   (`departmentId: null`, never settable from the registration form) and so only
+   ever see `visibility: "ALL"` materials — there is no path to self-assign a
+   department.
+9. **The site is internal.** Root metadata sets `robots: { index: false, follow: false }`
    and `robots.txt` disallows everything. Do not add sitemaps, structured data, or any
    other SEO work.
-9. **Passwords**: bcrypt, cost 12. Never log them, never return a hash from an API.
-10. **Secrets live in `.env`**, which is gitignored. Commit `.env.example` instead.
+10. **Passwords**: bcrypt, cost 12. Never log them, never return a hash from an API.
+11. **Secrets live in `.env`**, which is gitignored. Commit `.env.example` instead.
 
 ## Working conventions
 
@@ -76,7 +82,7 @@ starting any phase.
 ## Out of scope — do not build
 
 Payment gateway, e-commerce, bulk email, live chat, mobile app, multi-language,
-analytics, SEO tooling, employee self-signup.
+analytics, SEO tooling.
 
 <!-- BEGIN:nextjs-agent-rules -->
 
