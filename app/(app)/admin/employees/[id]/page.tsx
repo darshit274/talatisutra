@@ -16,7 +16,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
   const employee = await prisma.user.findUnique({ where: { id } });
-  return { title: employee?.name ?? "Employee" };
+  return { title: employee?.name ?? "User" };
 }
 
 export default async function EditEmployeePage({

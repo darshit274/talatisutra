@@ -31,7 +31,7 @@ const ADMIN_LINKS = [
   { href: "/admin/materials", label: "Materials", icon: FolderOpen },
   { href: "/admin/categories", label: "Categories", icon: Tags },
   { href: "/admin/departments", label: "Departments", icon: Building2 },
-  { href: "/admin/employees", label: "Employees", icon: Users },
+  { href: "/admin/employees", label: "Users", icon: Users },
   { href: "/admin/enquiries", label: "Enquiries", icon: Mail },
 ];
 
@@ -120,7 +120,7 @@ export function AppShell({ user, children }: { user: SessionUser | null; childre
           >
             {mobileOpen ? <X className="size-5" /> : <Menu className="size-5" />}
           </button>
-          <span className="font-semibold">{isAdmin ? "Admin Portal" : "Employee Portal"}</span>
+          <span className="font-semibold">{isAdmin ? "Admin Portal" : "User Portal"}</span>
         </div>
         {user ? (
           <div className="flex items-center gap-3 text-sm">

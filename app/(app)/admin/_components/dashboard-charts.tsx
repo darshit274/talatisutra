@@ -41,7 +41,7 @@ export function DashboardCharts({
     <div className="grid gap-4 lg:grid-cols-2">
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-medium">Employees by department</CardTitle>
+          <CardTitle className="text-sm font-medium">Users by department</CardTitle>
         </CardHeader>
         <CardContent className="h-64">
           <ResponsiveContainer width="100%" height="100%">

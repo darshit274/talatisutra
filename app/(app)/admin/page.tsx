@@ -14,8 +14,8 @@ export default async function AdminDashboardPage() {
   const summary = await getAdminDashboardSummary();
 
   const stats = [
-    { label: "Employees", value: summary.employeeCount },
-    { label: "Active employees", value: summary.activeEmployeeCount },
+    { label: "Users", value: summary.employeeCount },
+    { label: "Active users", value: summary.activeEmployeeCount },
     { label: "Materials", value: summary.materialCount },
     { label: "Unread enquiries", value: summary.unreadEnquiryCount },
   ];

@@ -73,7 +73,7 @@ export function EmployeeForm({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="EMPLOYEE">Employee</SelectItem>
+              <SelectItem value="EMPLOYEE">User</SelectItem>
               <SelectItem value="ADMIN">Admin</SelectItem>
             </SelectContent>
           </Select>
@@ -92,7 +92,7 @@ export function EmployeeForm({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="employeeCode">Employee code (optional)</Label>
+        <Label htmlFor="employeeCode">User code (optional)</Label>
         <Input id="employeeCode" name="employeeCode" defaultValue={initialValues?.employeeCode} />
       </div>
 

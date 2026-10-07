@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { format } from "date-fns";
+import type { Role } from "@prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -8,8 +9,10 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "cn";
 
 export const metadata: Metadata = {
-  title: "Employees",
+  title: "Users",
 };
+
+const ROLE_LABELS: Record<Role, string> = { ADMIN: "Admin", EMPLOYEE: "User" };
 
 export default async function AdminEmployeesPage() {
   const users = await prisma.user.findMany({
@@ -21,19 +24,19 @@ export default async function AdminEmployeesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold">Employees</h1>
+          <h1 className="text-xl font-semibold">Users</h1>
           <p className="text-sm text-muted-foreground">
             {users.length} account{users.length === 1 ? "" : "s"}
           </p>
         </div>
         <Link href="/admin/employees/new" className={cn(buttonVariants())}>
-          New employee
+          New user
         </Link>
       </div>
 
       {users.length === 0 ? (
         <div className="rounded-lg border p-8 text-center text-sm text-muted-foreground">
-          No employees yet.
+          No users yet.
         </div>
       ) : (
         <div className="overflow-x-auto rounded-lg border">
@@ -69,7 +72,7 @@ export default async function AdminEmployeesPage() {
                   </TableCell>
                   <TableCell>
                     <Badge variant={employeeRow.role === "ADMIN" ? "default" : "outline"}>
-                      {employeeRow.role}
+                      {ROLE_LABELS[employeeRow.role]}
                     </Badge>
                   </TableCell>
                   <TableCell>
