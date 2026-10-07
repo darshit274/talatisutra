@@ -36,7 +36,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const sniffed = sniffFileType(buffer);
   if (!sniffed) {
     return NextResponse.json(
-      { error: "Unrecognised file type. Allowed: PDF, PNG, JPEG, WebP." },
+      { error: "Unrecognised file type. Allowed: PDF, PNG, JPEG, WebP, DOC, DOCX." },
       { status: 400 },
     );
   }
