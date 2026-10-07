@@ -36,11 +36,14 @@ export function MarketingHeader() {
           ))}
         </nav>
 
-        <div className="hidden md:block">
+        <div className="hidden items-center gap-2 md:flex">
+          <Link href="/register" className={buttonVariants({ variant: "ghost" })}>
+            Register
+          </Link>
           {/* Base UI's Button can't wrap a Link via render (see button.tsx) - style
               the Link directly with buttonVariants instead. */}
           <Link href="/login" className={buttonVariants()}>
-            Employee Login
+            User Login
           </Link>
         </div>
 
@@ -71,11 +74,20 @@ export function MarketingHeader() {
             ))}
             <li>
               <Link
+                href="/register"
+                className={buttonVariants({ variant: "ghost", className: "w-full" })}
+                onClick={() => setMobileOpen(false)}
+              >
+                Register
+              </Link>
+            </li>
+            <li>
+              <Link
                 href="/login"
                 className={buttonVariants({ className: "w-full" })}
                 onClick={() => setMobileOpen(false)}
               >
-                Employee Login
+                User Login
               </Link>
             </li>
           </ul>
