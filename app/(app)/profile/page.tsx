@@ -65,7 +65,12 @@ export default async function ProfilePage() {
         <p className="text-sm text-muted-foreground">
           Change the password you use to sign in.
         </p>
-        <Button variant="outline" size="sm" render={<Link href="/change-password" />}>
+        <Button
+          variant="outline"
+          size="sm"
+          nativeButton={false}
+          render={<Link href="/change-password" />}
+        >
           Change password
         </Button>
       </div>
