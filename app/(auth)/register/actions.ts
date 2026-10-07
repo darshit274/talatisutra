@@ -3,6 +3,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { randomInt } from "node:crypto";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { hashPassword } from "@/lib/auth/password";
 import { hashToken } from "@/lib/auth/tokens";
@@ -51,19 +52,27 @@ export async function register(_prevState: RegisterState, formData: FormData): P
 
   const passwordHash = await hashPassword(password);
 
-  const user = await prisma.user.create({
-    data: {
-      name,
-      email,
-      phone,
-      passwordHash,
-      role: "EMPLOYEE",
-      departmentId: null,
-      isActive: true,
-      mustChangePassword: false,
-      emailVerified: false,
-    },
-  });
+  let user;
+  try {
+    user = await prisma.user.create({
+      data: {
+        name,
+        email,
+        phone,
+        passwordHash,
+        role: "EMPLOYEE",
+        departmentId: null,
+        isActive: true,
+        mustChangePassword: false,
+        emailVerified: false,
+      },
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      return { error: "An account with this email already exists." };
+    }
+    throw error;
+  }
 
   const code = randomInt(100000, 1000000).toString();
   await prisma.emailOtp.create({
