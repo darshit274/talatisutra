@@ -104,7 +104,9 @@ export function EditMaterialForm({
             ))}
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground">Visible to every employee.</p>
+          <p className="text-sm text-muted-foreground">
+            Visible to every signed-in user, including self-registered accounts.
+          </p>
         )}
       </div>
 

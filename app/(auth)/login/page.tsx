@@ -17,7 +17,7 @@ export default async function LoginPage({
       <div className="space-y-1 text-center">
         <h1 className="text-2xl font-semibold">Sign in</h1>
         <p className="text-sm text-muted-foreground">
-          Sign in with the email and password your administrator gave you.
+          Sign in with your email and password.
         </p>
       </div>
       <LoginForm next={next} />

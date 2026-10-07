@@ -18,7 +18,7 @@ export default async function AdminDepartmentsPage() {
       <div>
         <h1 className="text-xl font-semibold">Departments</h1>
         <p className="text-sm text-muted-foreground">
-          Employees belong to a department; materials can be restricted to one or more.
+          Users belong to a department; materials can be restricted to one or more.
         </p>
       </div>
 

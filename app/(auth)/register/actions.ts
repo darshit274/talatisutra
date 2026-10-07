@@ -11,6 +11,7 @@ import { getClientIp } from "@/lib/auth/ip";
 import { isRegistrationThrottled, recordRegistrationAttempt } from "@/lib/auth/throttle";
 import { sendEmailOtp } from "@/lib/mail";
 import { registerSchema } from "@/lib/validation/auth";
+import { writeAuditLog } from "@/lib/audit";
 
 export interface RegisterState {
   error?: string;
@@ -73,6 +74,14 @@ export async function register(_prevState: RegisterState, formData: FormData): P
     }
     throw error;
   }
+
+  await writeAuditLog({
+    actor: user,
+    action: "auth.register",
+    entity: "User",
+    entityId: user.id,
+    ip,
+  });
 
   const code = randomInt(100000, 1000000).toString();
   await prisma.emailOtp.create({

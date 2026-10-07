@@ -18,7 +18,7 @@ export default async function AdminCategoriesPage() {
       <div>
         <h1 className="text-xl font-semibold">Categories</h1>
         <p className="text-sm text-muted-foreground">
-          Used to group materials in the employee library.
+          Used to group materials in the materials library.
         </p>
       </div>
 

@@ -50,7 +50,7 @@ export async function sendPasswordResetEmail(to: string, resetUrl: string): Prom
       "Reset your password",
       `
         <p style="margin: 0 0 16px; color: #333;">
-          We received a request to reset the password for your employee portal account.
+          We received a request to reset the password for your account.
           This link expires in 1 hour and can only be used once.
         </p>
         <p style="margin: 0 0 16px;">
@@ -113,12 +113,12 @@ export async function sendContactEnquiryEmail(enquiry: ContactEnquiryDetails): P
 export async function sendNewAccountEmail(to: string, tempPassword: string): Promise<void> {
   await safeSend({
     to,
-    subject: "Your employee portal account",
+    subject: "Your account",
     html: emailShell(
       "Your account is ready",
       `
         <p style="margin: 0 0 16px; color: #333;">
-          An administrator created an employee portal account for you. Sign in with
+          An administrator created an account for you. Sign in with
           the temporary password below — you'll be asked to set your own the first
           time you log in.
         </p>

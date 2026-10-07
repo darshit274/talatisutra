@@ -10,6 +10,8 @@ import { getClientIp } from "@/lib/auth/ip";
 import { isOtpVerifyThrottled, recordOtpVerifyAttempt, isRegistrationThrottled, recordRegistrationAttempt } from "@/lib/auth/throttle";
 import { sendEmailOtp } from "@/lib/mail";
 import { verifyEmailSchema } from "@/lib/validation/auth";
+import { writeAuditLog } from "@/lib/audit";
+import { z } from "zod";
 
 export interface VerifyEmailState {
   error?: string;
@@ -66,14 +68,23 @@ export async function verifyEmail(_prevState: VerifyEmailState, formData: FormDa
 
   await createSession(user.id, ip, headersList.get("user-agent"));
 
+  await writeAuditLog({
+    actor: user,
+    action: "auth.login",
+    entity: "User",
+    entityId: user.id,
+    ip,
+  });
+
   redirect("/portal");
 }
 
 export async function resendOtp(_prevState: ResendState, formData: FormData): Promise<ResendState> {
-  const email = formData.get("email");
-  if (typeof email !== "string" || !email) {
+  const parsed = z.string().trim().toLowerCase().email().safeParse(formData.get("email"));
+  if (!parsed.success) {
     return { error: INVALID_CODE_ERROR };
   }
+  const email = parsed.data;
 
   const headersList = await headers();
   const ip = getClientIp(headersList);

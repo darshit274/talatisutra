@@ -34,14 +34,14 @@ export default async function ProfilePage() {
         </div>
         <div>
           <dt className="text-muted-foreground">Role</dt>
-          <dd className="font-medium">{user.role === "ADMIN" ? "Admin" : "Employee"}</dd>
+          <dd className="font-medium">{user.role === "ADMIN" ? "Admin" : "User"}</dd>
         </div>
         <div>
           <dt className="text-muted-foreground">Department</dt>
           <dd className="font-medium">{user.department?.name ?? "None"}</dd>
         </div>
         <div>
-          <dt className="text-muted-foreground">Employee code</dt>
+          <dt className="text-muted-foreground">User code</dt>
           <dd className="font-medium">{user.employeeCode ?? "None"}</dd>
         </div>
       </dl>

@@ -58,7 +58,7 @@ export async function login(_prevState: LoginState, formData: FormData): Promise
     // so an unverified-but-legitimate user can't get throttled out of their own
     // account by the login lockout (CLAUDE.md rule: never penalize a correct
     // password). Redirect rather than erroring so they land somewhere useful.
-    redirect(`/verify-email?email=${encodeURIComponent(user.email)}`);
+    redirect(`/verify-email?email=${encodeURIComponent(user.email)}&from=login`);
   }
 
   await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });

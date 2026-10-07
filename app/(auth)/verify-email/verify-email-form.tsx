@@ -48,6 +48,9 @@ export function VerifyEmailForm({ email }: { email: string }) {
             {resendPending ? "Sending…" : "Resend code"}
           </Button>
         )}
+        {resendState.error ? (
+          <p className="mt-2 text-center text-sm text-destructive">{resendState.error}</p>
+        ) : null}
       </form>
     </div>
   );

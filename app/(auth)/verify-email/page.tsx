@@ -9,9 +9,9 @@ export const metadata: Metadata = {
 export default async function VerifyEmailPage({
   searchParams,
 }: {
-  searchParams: Promise<{ email?: string }>;
+  searchParams: Promise<{ email?: string; from?: string }>;
 }) {
-  const { email } = await searchParams;
+  const { email, from } = await searchParams;
 
   if (!email) {
     redirect("/register");
@@ -22,8 +22,9 @@ export default async function VerifyEmailPage({
       <div className="space-y-1 text-center">
         <h1 className="text-2xl font-semibold">Check your email</h1>
         <p className="text-sm text-muted-foreground">
-          We sent a 6-digit code to {email}. Enter it below to finish creating your
-          account.
+          {from === "login"
+            ? `Your email address (${email}) isn't verified yet. Request a code below to finish verifying.`
+            : `We sent a 6-digit code to ${email}. Enter it below to finish creating your account.`}
         </p>
       </div>
       <VerifyEmailForm email={email} />

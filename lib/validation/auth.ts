@@ -33,7 +33,7 @@ export const changePasswordSchema = z
 export const registerSchema = z
   .object({
     name: z.string().trim().min(1, "Full name is required.").max(200),
-    email: z.string().trim().email("Enter a valid email address."),
+    email: z.string().trim().toLowerCase().email("Enter a valid email address."),
     phone: z
       .string()
       .trim()
@@ -56,6 +56,6 @@ export const registerSchema = z
   });
 
 export const verifyEmailSchema = z.object({
-  email: z.string().trim().email(),
+  email: z.string().trim().toLowerCase().email(),
   code: z.string().trim().regex(/^[0-9]{6}$/, "Enter the 6-digit code."),
 });

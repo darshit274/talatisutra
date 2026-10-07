@@ -20,7 +20,7 @@ export function DepartmentRow({
 
   const parts: string[] = [];
   if (department.userCount > 0) {
-    parts.push(`${department.userCount} employee${department.userCount === 1 ? "" : "s"}`);
+    parts.push(`${department.userCount} user${department.userCount === 1 ? "" : "s"}`);
   }
   if (department.materialCount > 0) {
     parts.push(`${department.materialCount} material${department.materialCount === 1 ? "" : "s"}`);
@@ -49,7 +49,7 @@ export function DepartmentRow({
         description={
           parts.length > 0
             ? `${parts.join(" and ")} will be unassigned from this department — they are not deleted.`
-            : "No employees or materials are assigned to this department."
+            : "No users or materials are assigned to this department."
         }
       />
     </div>

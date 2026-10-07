@@ -78,7 +78,7 @@ export default async function EditMaterialPage({
       <DeleteConfirmButton
         action={deleteMaterial.bind(null, id)}
         title={`Delete "${material.title}"?`}
-        description="This permanently deletes the material and its file. Employees will no longer be able to see or download it."
+        description="This permanently deletes the material and its file. Users will no longer be able to see or download it."
       />
     </div>
   );
