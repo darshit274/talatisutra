@@ -53,6 +53,14 @@ export async function login(_prevState: LoginState, formData: FormData): Promise
     return { error: GENERIC_ERROR };
   }
 
+  if (!user.emailVerified) {
+    // Credentials were correct — this already counted as a successful attempt above,
+    // so an unverified-but-legitimate user can't get throttled out of their own
+    // account by the login lockout (CLAUDE.md rule: never penalize a correct
+    // password). Redirect rather than erroring so they land somewhere useful.
+    redirect(`/verify-email?email=${encodeURIComponent(user.email)}`);
+  }
+
   await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
   await createSession(user.id, ip, headersList.get("user-agent"));
   await writeAuditLog({ actor: user, action: "auth.login", entity: "User", entityId: user.id, ip });
