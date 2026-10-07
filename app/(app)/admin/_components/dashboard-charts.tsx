@@ -50,7 +50,7 @@ export function DashboardCharts({
               <XAxis dataKey="name" tick={AXIS_STYLE} tickLine={false} axisLine={false} />
               <YAxis allowDecimals={false} tick={AXIS_STYLE} tickLine={false} axisLine={false} />
               <Tooltip contentStyle={TOOLTIP_STYLE} cursor={{ fill: "var(--muted)" }} />
-              <Bar dataKey="count" name="Employees" fill="var(--primary)" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="count" name="Users" fill="var(--primary)" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
