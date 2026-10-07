@@ -34,12 +34,27 @@ unchanged. Renaming the enum value would require a data migration and touching e
 change.
 
 Concretely, this touches:
-- `app/(app)/_components/app-shell.tsx`: `ADMIN_LINKS` label `"Employees"` → `"Users"`.
-- `app/(app)/admin/employees/page.tsx` and `[id]/page.tsx` and `new/page.tsx`: headings
-  and `<Metadata title>` referencing "Employee(s)" → "User(s)".
-- `app/(app)/admin/employees/employee-form.tsx`: visible labels only (e.g. any
-  "Employee code" label stays — it's a field name, not a role reference; audit each
-  string individually rather than blanket find/replace).
+- `app/(app)/_components/app-shell.tsx`: `ADMIN_LINKS` label `"Employees"` → `"Users"`,
+  and the header's `isAdmin ? "Admin Portal" : "Employee Portal"` → `"User Portal"` for
+  the non-admin branch (keeps the parallel "Admin Portal" / "User Portal" naming).
+- `app/(app)/admin/employees/page.tsx`: `<Metadata title>` `"Employees"` → `"Users"`,
+  `<h1>` `"Employees"` → `"Users"`, `"New employee"` button → `"New user"`, `"No
+  employees yet."` empty state → `"No users yet."`, and the role `<Badge>` — it
+  currently prints the raw enum value (`{employeeRow.role}`, i.e. literally renders
+  "EMPLOYEE" on screen) — replace with a small `ROLE_LABELS: Record<Role, string> =
+  { ADMIN: "Admin", EMPLOYEE: "User" }` map so the badge shows "User", not the raw
+  enum.
+- `app/(app)/admin/employees/[id]/page.tsx`: `generateMetadata`'s fallback title
+  `"Employee"` → `"User"`.
+- `app/(app)/admin/employees/new/page.tsx`: `<Metadata title>` `"New employee"` →
+  `"New user"`, `<h1>` `"New employee"` → `"New user"`, `submitLabel="Create
+  employee"` → `"Create user"`.
+- `app/(app)/admin/employees/employee-form.tsx`: the role `<SelectItem
+  value="EMPLOYEE">Employee</SelectItem>` → `<SelectItem
+  value="EMPLOYEE">User</SelectItem>` (value stays the enum constant, only the visible
+  label changes), and the `"Employee code"` field label → `"User code"` (the
+  underlying `employeeCode` Prisma field/variable name stays unchanged, per the
+  internal-identifier rule above — only the rendered label changes).
 - `app/(app)/admin/page.tsx` dashboard: "Employees" / "Active employees" stat card
   labels → "Users" / "Active users"; `lib/queries/admin.ts`'s
   `employeesByDepartment` chart title "Employees by department" → "Users by
