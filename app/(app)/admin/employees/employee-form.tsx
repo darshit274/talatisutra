@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import type { Role } from "@prisma/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,8 @@ interface EmployeeFormValues {
   phone: string;
   employeeCode: string;
 }
+
+const ROLE_LABELS: Record<Role, string> = { ADMIN: "Admin", EMPLOYEE: "User" };
 
 export function EmployeeForm({
   action,
@@ -70,7 +73,7 @@ export function EmployeeForm({
           <Label htmlFor="role-trigger">Role</Label>
           <Select name="role" defaultValue={initialValues?.role ?? "EMPLOYEE"}>
             <SelectTrigger id="role-trigger" className="w-full">
-              <SelectValue />
+              <SelectValue>{(value: Role) => ROLE_LABELS[value]}</SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="EMPLOYEE">User</SelectItem>
