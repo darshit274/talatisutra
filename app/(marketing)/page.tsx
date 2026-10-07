@@ -8,7 +8,7 @@ export default function HomePage() {
   return (
     <div>
       <section className="mx-auto max-w-5xl px-4 py-20 text-center">
-        <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">Company Name</h1>
+        <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">TalatiSutra</h1>
         <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
           Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent nec turpis
           vitae justo cursus tincidunt.

@@ -15,7 +15,7 @@ export function MarketingFooter() {
     <footer className="border-t">
       <div className="mx-auto flex max-w-5xl flex-col gap-6 px-4 py-10 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-1">
-          <p className="font-semibold">Company Name</p>
+          <p className="font-semibold">TalatiSutra</p>
           <p className="text-sm text-muted-foreground">
             123 Placeholder Street, Some City
             <br />
@@ -38,8 +38,8 @@ export function MarketingFooter() {
 
       <div className="border-t px-4 py-4">
         <p className="mx-auto max-w-5xl text-xs text-muted-foreground">
-          &copy; {year} Company Name. Placeholder content — pending client copy, colours
-          and logo (BUILD-PLAN §14).
+          &copy; {year} TalatiSutra. Placeholder address/contact details — pending client
+          copy and logo (BUILD-PLAN §14).
         </p>
       </div>
     </footer>

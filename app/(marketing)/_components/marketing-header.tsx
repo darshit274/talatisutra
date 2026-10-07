@@ -2,8 +2,17 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Menu, X } from "lucide-react";
+import { Menu, X, FolderOpen, UserCircle, LogOut } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import type { SessionUser } from "@/lib/auth/session";
+import { logout } from "@/app/(app)/actions";
 
 const NAV_LINKS = [
   { href: "/", label: "Home" },
@@ -13,15 +22,21 @@ const NAV_LINKS = [
   { href: "/contact", label: "Contact" },
 ];
 
-export function MarketingHeader() {
+const PORTAL_LINKS = [
+  { href: "/portal/materials", label: "Materials", icon: FolderOpen },
+  { href: "/profile", label: "Profile", icon: UserCircle },
+];
+
+export function MarketingHeader({ user }: { user: SessionUser | null }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const closeMobile = () => setMobileOpen(false);
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background">
       <div className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-4 px-4">
         {/* Wordmark placeholder — swap for the client's real logo (BUILD-PLAN §9/§14) */}
-        <Link href="/" className="font-semibold" onClick={() => setMobileOpen(false)}>
-          Company Name
+        <Link href="/" className="font-semibold" onClick={closeMobile}>
+          TalatiSutra
         </Link>
 
         <nav className="hidden items-center gap-6 md:flex">
@@ -36,15 +51,48 @@ export function MarketingHeader() {
           ))}
         </nav>
 
-        <div className="hidden items-center gap-2 md:flex">
-          <Link href="/register" className={buttonVariants({ variant: "ghost" })}>
-            Register
-          </Link>
-          {/* Base UI's Button can't wrap a Link via render (see button.tsx) - style
-              the Link directly with buttonVariants instead. */}
-          <Link href="/login" className={buttonVariants()}>
-            User Login
-          </Link>
+        <div className="hidden items-center gap-3 md:flex">
+          {user ? (
+            <>
+              <span className="text-sm text-muted-foreground">{user.name}</span>
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  className="inline-flex items-center justify-center rounded-md p-2 hover:bg-muted"
+                  aria-label="Open account menu"
+                >
+                  <Menu className="size-5" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {PORTAL_LINKS.map((link) => (
+                    <DropdownMenuItem key={link.href} render={<Link href={link.href} />}>
+                      <link.icon className="size-4" aria-hidden="true" />
+                      {link.label}
+                    </DropdownMenuItem>
+                  ))}
+                  <DropdownMenuSeparator />
+                  <form action={logout}>
+                    <DropdownMenuItem
+                      variant="destructive"
+                      nativeButton
+                      render={<button type="submit" className="w-full" />}
+                    >
+                      <LogOut className="size-4" aria-hidden="true" />
+                      Sign out
+                    </DropdownMenuItem>
+                  </form>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          ) : (
+            <>
+              <Link href="/register" className={buttonVariants({ variant: "ghost" })}>
+                Register
+              </Link>
+              <Link href="/login" className={buttonVariants()}>
+                User Login
+              </Link>
+            </>
+          )}
         </div>
 
         <button
@@ -66,30 +114,62 @@ export function MarketingHeader() {
                 <Link
                   href={link.href}
                   className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                  onClick={() => setMobileOpen(false)}
+                  onClick={closeMobile}
                 >
                   {link.label}
                 </Link>
               </li>
             ))}
-            <li>
-              <Link
-                href="/register"
-                className={buttonVariants({ variant: "ghost", className: "w-full" })}
-                onClick={() => setMobileOpen(false)}
-              >
-                Register
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/login"
-                className={buttonVariants({ className: "w-full" })}
-                onClick={() => setMobileOpen(false)}
-              >
-                User Login
-              </Link>
-            </li>
+            {user ? (
+              <>
+                <li className="border-t pt-4 text-sm font-medium">{user.name}</li>
+                {PORTAL_LINKS.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+                      onClick={closeMobile}
+                    >
+                      <link.icon className="size-4" aria-hidden="true" />
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+                <li>
+                  <form action={logout}>
+                    <button
+                      type="submit"
+                      className="flex items-center gap-1.5 text-sm text-destructive"
+                      onClick={closeMobile}
+                    >
+                      <LogOut className="size-4" aria-hidden="true" />
+                      Sign out
+                    </button>
+                  </form>
+                </li>
+              </>
+            ) : (
+              <>
+                <li>
+                  <Link
+                    href="/register"
+                    className={buttonVariants({ variant: "ghost", className: "w-full" })}
+                    onClick={closeMobile}
+                  >
+                    Register
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/login"
+                    className={buttonVariants({ className: "w-full" })}
+                    onClick={closeMobile}
+                  >
+                    User Login
+                  </Link>
+                </li>
+              </>
+            )}
           </ul>
         </nav>
       ) : null}

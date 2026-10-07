@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "User Portal", // placeholder — swap for the client's company name (BUILD-PLAN §14)
-    template: "%s | User Portal",
+    default: "TalatiSutra",
+    template: "%s | TalatiSutra",
   },
   description: "Placeholder description — replace with client copy (BUILD-PLAN §14).",
   // The site is internal (CLAUDE.md rule 8): never indexed, regardless of page.
