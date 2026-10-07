@@ -7,7 +7,7 @@ import { prisma } from "@/lib/db/prisma";
 import { hashToken } from "@/lib/auth/tokens";
 import { createSession } from "@/lib/auth/session";
 import { getClientIp } from "@/lib/auth/ip";
-import { isOtpVerifyThrottled, recordOtpVerifyAttempt, isRegistrationThrottled } from "@/lib/auth/throttle";
+import { isOtpVerifyThrottled, recordOtpVerifyAttempt, isRegistrationThrottled, recordRegistrationAttempt } from "@/lib/auth/throttle";
 import { sendEmailOtp } from "@/lib/mail";
 import { verifyEmailSchema } from "@/lib/validation/auth";
 
@@ -51,7 +51,7 @@ export async function verifyEmail(_prevState: VerifyEmailState, formData: FormDa
     : null;
 
   const isValid =
-    !!user && !!otp && otp.expiresAt > new Date() && otp.codeHash === hashToken(code);
+    !!user && user.isActive && !!otp && otp.expiresAt > new Date() && otp.codeHash === hashToken(code);
 
   await recordOtpVerifyAttempt(email, ip, isValid);
 
@@ -83,6 +83,8 @@ export async function resendOtp(_prevState: ResendState, formData: FormData): Pr
   if (await isRegistrationThrottled(email, ip)) {
     return { error: THROTTLED_ERROR };
   }
+
+  await recordRegistrationAttempt(email, ip);
 
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user || user.emailVerified) {
