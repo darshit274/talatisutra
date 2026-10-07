@@ -20,7 +20,7 @@ export function MaterialsFilterBar({
 }: {
   categories: Category[];
   selectedCategorySlug?: string;
-  selectedKind?: "PDF" | "IMAGE";
+  selectedKind?: "PDF" | "IMAGE" | "DOCUMENT";
   search?: string;
 }) {
   return (
@@ -52,6 +52,7 @@ export function MaterialsFilterBar({
             <SelectItem value="">All types</SelectItem>
             <SelectItem value="PDF">PDF</SelectItem>
             <SelectItem value="IMAGE">Image</SelectItem>
+            <SelectItem value="DOCUMENT">Document</SelectItem>
           </SelectContent>
         </Select>
       </div>

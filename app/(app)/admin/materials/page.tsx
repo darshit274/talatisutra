@@ -40,7 +40,10 @@ export default async function AdminMaterialsPage({
   const selectedCategory = params.category
     ? categories.find((c) => c.slug === params.category)
     : undefined;
-  const kind = params.kind === "PDF" || params.kind === "IMAGE" ? params.kind : undefined;
+  const kind =
+    params.kind === "PDF" || params.kind === "IMAGE" || params.kind === "DOCUMENT"
+      ? params.kind
+      : undefined;
   const requestedPage = params.page ? Number(params.page) : 1;
   const page = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
 

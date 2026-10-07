@@ -23,7 +23,7 @@ const PAGE_SIZE = 20;
 
 export interface MaterialListFilters {
   categoryId?: string;
-  kind?: "PDF" | "IMAGE";
+  kind?: "PDF" | "IMAGE" | "DOCUMENT";
   search?: string;
   page?: number;
 }

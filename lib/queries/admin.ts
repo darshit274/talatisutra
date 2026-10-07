@@ -92,7 +92,7 @@ const ADMIN_MATERIALS_PAGE_SIZE = 20;
 
 export interface AdminMaterialListFilters {
   categoryId?: string;
-  kind?: "PDF" | "IMAGE";
+  kind?: "PDF" | "IMAGE" | "DOCUMENT";
   search?: string;
   page?: number;
 }

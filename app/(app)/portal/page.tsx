@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { FileText, Image as ImageIcon } from "lucide-react";
+import { MATERIAL_KIND_ICON } from "@/lib/materials/kind-icon";
 import { requireUser } from "@/lib/auth/session";
 import { getPortalSummary } from "@/lib/queries/materials";
 
@@ -61,11 +61,10 @@ export default async function PortalPage() {
                 href={`/portal/materials/${material.id}`}
                 className="flex items-center gap-3 p-4 transition-colors hover:bg-muted/50"
               >
-                {material.kind === "PDF" ? (
-                  <FileText className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
-                ) : (
-                  <ImageIcon className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
-                )}
+                {(() => {
+                  const Icon = MATERIAL_KIND_ICON[material.kind];
+                  return <Icon className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />;
+                })()}
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-medium">{material.title}</p>
                   <p className="text-sm text-muted-foreground">

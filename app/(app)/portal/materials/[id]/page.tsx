@@ -68,9 +68,13 @@ export default async function MaterialDetailPage({
       <div className="overflow-hidden rounded-lg border">
         {material.kind === "PDF" ? (
           <iframe src={fileUrl} title={material.title} className="h-[80vh] w-full" />
-        ) : (
+        ) : material.kind === "IMAGE" ? (
           // eslint-disable-next-line @next/next/no-img-element -- served through our own auth-checked route, not a static asset next/image can optimize
           <img src={fileUrl} alt={material.title} className="mx-auto max-h-[80vh] w-full object-contain" />
+        ) : (
+          <div className="flex h-48 items-center justify-center p-8 text-center text-sm text-muted-foreground">
+            No preview available for this file type — use Download above to view it.
+          </div>
         )}
       </div>
     </div>
