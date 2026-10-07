@@ -69,3 +69,46 @@ export async function isContactFormThrottled(email: string, ip: string): Promise
 export async function recordContactFormSubmission(email: string, ip: string): Promise<void> {
   await prisma.loginAttempt.create({ data: { email, ip, success: true, kind: "CONTACT_FORM" } });
 }
+
+/**
+ * Same 5-per-15-minutes window as the other public forms (BUILD-PLAN §4 fix #6),
+ * applied to /register so it can't be used to mass-create accounts or flood an inbox.
+ */
+export async function isRegistrationThrottled(email: string, ip: string): Promise<boolean> {
+  const since = windowStart();
+  const [byEmail, byIp] = await Promise.all([
+    prisma.loginAttempt.count({
+      where: { kind: "REGISTRATION", email, createdAt: { gte: since } },
+    }),
+    prisma.loginAttempt.count({
+      where: { kind: "REGISTRATION", ip, createdAt: { gte: since } },
+    }),
+  ]);
+  return byEmail >= MAX_ATTEMPTS || byIp >= MAX_ATTEMPTS;
+}
+
+export async function recordRegistrationAttempt(email: string, ip: string): Promise<void> {
+  await prisma.loginAttempt.create({ data: { email, ip, success: true, kind: "REGISTRATION" } });
+}
+
+/**
+ * Same window applied to OTP code submissions, so a code can't be brute-forced (only
+ * 6 digits = 1,000,000 possibilities, but 5 tries per 15 minutes makes that infeasible
+ * before the 10-minute expiry anyway).
+ */
+export async function isOtpVerifyThrottled(email: string, ip: string): Promise<boolean> {
+  const since = windowStart();
+  const [byEmail, byIp] = await Promise.all([
+    prisma.loginAttempt.count({
+      where: { kind: "EMAIL_OTP_VERIFY", success: false, email, createdAt: { gte: since } },
+    }),
+    prisma.loginAttempt.count({
+      where: { kind: "EMAIL_OTP_VERIFY", success: false, ip, createdAt: { gte: since } },
+    }),
+  ]);
+  return byEmail >= MAX_ATTEMPTS || byIp >= MAX_ATTEMPTS;
+}
+
+export async function recordOtpVerifyAttempt(email: string, ip: string, success: boolean): Promise<void> {
+  await prisma.loginAttempt.create({ data: { email, ip, success, kind: "EMAIL_OTP_VERIFY" } });
+}

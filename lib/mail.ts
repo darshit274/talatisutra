@@ -141,3 +141,32 @@ export async function sendNewAccountEmail(to: string, tempPassword: string): Pro
     ),
   });
 }
+
+export async function sendEmailOtp(to: string, code: string): Promise<void> {
+  await safeSend({
+    to,
+    subject: "Confirm your account",
+    html: emailShell(
+      "Confirm your account",
+      `
+        <p style="margin: 0 0 16px; color: #333;">
+          Use the code below to confirm your email address and finish creating your
+          account. It expires in 10 minutes.
+        </p>
+        <p style="margin: 0 0 16px; font-size: 28px; font-weight: 600; letter-spacing: 4px; color: #111;">
+          ${escapeHtml(code)}
+        </p>
+        <p style="margin: 0; color: #666; font-size: 13px;">
+          If you didn't request this, you can safely ignore this email.
+        </p>
+      `,
+    ),
+  });
+
+  // Local dev has no real SMTP configured (see .env's SMTP comments — sends already
+  // fail silently there), so registration would otherwise be untestable end-to-end
+  // without this. Unlike other mail flows, the user is *blocked* without this code.
+  if (process.env.NODE_ENV !== "production") {
+    console.log(`[dev] Email OTP for ${to}: ${code}`);
+  }
+}
