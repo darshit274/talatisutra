@@ -19,6 +19,12 @@ import { cn } from "cn";
  * being deleted, requires an explicit confirm. `action` is a Server Action (typically
  * pre-bound to the row's id via `.bind(null, id)`) that should `redirect()` when done
  * — that navigation is what actually closes this dialog, since it unmounts the tree.
+ *
+ * `disabled` renders a plain disabled button instead of the dialog trigger — used
+ * when the caller already knows the delete would fail (e.g. a category with
+ * children) and wants to say so up front rather than let the user open the dialog
+ * and hit a server-side rejection. `disabledReason` becomes the button's native
+ * `title` attribute (a hover tooltip) explaining why.
  */
 export function DeleteConfirmButton({
   action,
@@ -26,13 +32,34 @@ export function DeleteConfirmButton({
   description,
   triggerLabel = "Delete",
   triggerClassName,
+  disabled = false,
+  disabledReason,
 }: {
   action: () => Promise<void>;
   title: string;
   description: string;
   triggerLabel?: string;
   triggerClassName?: string;
+  disabled?: boolean;
+  disabledReason?: string;
 }) {
+  if (disabled) {
+    return (
+      <button
+        type="button"
+        disabled
+        title={disabledReason}
+        className={cn(
+          buttonVariants({ variant: "ghost", size: "sm", className: "text-destructive" }),
+          "cursor-not-allowed opacity-50",
+          triggerClassName,
+        )}
+      >
+        {triggerLabel}
+      </button>
+    );
+  }
+
   return (
     <AlertDialog>
       <AlertDialogTrigger
