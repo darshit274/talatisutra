@@ -26,7 +26,7 @@ export default async function PortalPage() {
           {categoryCounts.map((category) => (
             <Link
               key={category.id}
-              href={`/portal/materials?category=${category.slug}`}
+              href={`/portal/materials/category/${category.id}`}
               className="rounded-lg border p-4 transition-colors hover:bg-muted/50"
             >
               <p className="font-medium">{category.name}</p>

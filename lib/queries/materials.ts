@@ -125,6 +125,7 @@ export async function getPortalSummary(user: SessionUser): Promise<PortalSummary
       take: 5,
     }),
     prisma.category.findMany({
+      where: { parentId: null },
       orderBy: { sortOrder: "asc" },
       include: { _count: { select: { materials: { where } } } },
     }),
