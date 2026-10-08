@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db/prisma";
+import type { MaterialKind } from "@prisma/client";
 
 export interface CategoryNode {
   id: string;
@@ -63,4 +64,90 @@ export function computeVisibleSubtreeMap(
 
   for (const node of nodes) hasVisible(node);
   return result;
+}
+
+export interface CategoryTileData {
+  id: string;
+  name: string;
+  slug: string;
+  materialCount: number;
+  childCount: number;
+}
+
+export interface CategoryMaterialRow {
+  id: string;
+  title: string;
+  kind: MaterialKind;
+}
+
+export interface CategoryPageData {
+  category: { id: string; name: string };
+  breadcrumbs: CategoryNode[];
+  children: CategoryTileData[];
+  materials: CategoryMaterialRow[];
+}
+
+/** Admin: every top-level category's direct material + child counts, regardless of
+ * visibility — admins see everything. */
+export async function getAdminCategoryRoot(): Promise<{
+  topLevel: CategoryTileData[];
+  uncategorised: CategoryMaterialRow[];
+}> {
+  const [categories, uncategorised] = await Promise.all([
+    prisma.category.findMany({
+      where: { parentId: null },
+      orderBy: { sortOrder: "asc" },
+      include: { _count: { select: { materials: true, children: true } } },
+    }),
+    prisma.material.findMany({
+      where: { categoryId: null },
+      select: { id: true, title: true, kind: true },
+      orderBy: { createdAt: "desc" },
+    }),
+  ]);
+
+  return {
+    topLevel: categories.map((c) => ({
+      id: c.id,
+      name: c.name,
+      slug: c.slug,
+      materialCount: c._count.materials,
+      childCount: c._count.children,
+    })),
+    uncategorised,
+  };
+}
+
+/** Admin: one category's breadcrumbs, direct sub-categories, and direct materials.
+ * Returns null only if the category id doesn't exist. */
+export async function getAdminCategoryPage(id: string): Promise<CategoryPageData | null> {
+  const category = await prisma.category.findUnique({ where: { id } });
+  if (!category) return null;
+
+  const [nodes, children, materials] = await Promise.all([
+    getAllCategoryNodes(),
+    prisma.category.findMany({
+      where: { parentId: id },
+      orderBy: { sortOrder: "asc" },
+      include: { _count: { select: { materials: true, children: true } } },
+    }),
+    prisma.material.findMany({
+      where: { categoryId: id },
+      select: { id: true, title: true, kind: true },
+      orderBy: { createdAt: "desc" },
+    }),
+  ]);
+
+  return {
+    category: { id: category.id, name: category.name },
+    breadcrumbs: buildBreadcrumbTrail(nodes, id),
+    children: children.map((c) => ({
+      id: c.id,
+      name: c.name,
+      slug: c.slug,
+      materialCount: c._count.materials,
+      childCount: c._count.children,
+    })),
+    materials,
+  };
 }
