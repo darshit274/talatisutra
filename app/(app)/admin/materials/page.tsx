@@ -56,16 +56,16 @@ export default async function AdminMaterialsPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold">Materials</h1>
-          <p className="text-sm text-muted-foreground">
-            {total} item{total === 1 ? "" : "s"}
-          </p>
-        </div>
-        <Link href="/admin/materials/new" className={cn(buttonVariants())}>
-          Upload material
-        </Link>
+      <div>
+        <h1 className="text-xl font-semibold">Materials</h1>
+        <p className="text-sm text-muted-foreground">
+          {total} item{total === 1 ? "" : "s"}. Upload new materials from inside a
+          category on the{" "}
+          <Link href="/admin/categories" className="underline underline-offset-4">
+            Categories
+          </Link>{" "}
+          page.
+        </p>
       </div>
 
       <MaterialsFilterBar
