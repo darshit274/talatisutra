@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/db/prisma";
 import type { MaterialKind } from "@prisma/client";
+import type { SessionUser } from "@/lib/auth/session";
+import { visibleMaterialsWhere } from "@/lib/queries/materials";
 
 export interface CategoryNode {
   id: string;
@@ -148,6 +150,103 @@ export async function getAdminCategoryPage(id: string): Promise<CategoryPageData
       materialCount: c._count.materials,
       childCount: c._count.children,
     })),
+    materials,
+  };
+}
+
+/** Direct-visible material count per category, for the whole tree at once — one
+ * grouped query rather than one count query per category. */
+async function getDirectVisibleCounts(user: SessionUser): Promise<Map<string, number>> {
+  const grouped = await prisma.material.groupBy({
+    by: ["categoryId"],
+    where: { AND: [visibleMaterialsWhere(user), { categoryId: { not: null } }] },
+    _count: true,
+  });
+  return new Map(grouped.map((g) => [g.categoryId as string, g._count]));
+}
+
+/** Employee: top-level categories that have something visible to `user` anywhere in
+ * their subtree, plus directly-uncategorised materials visible to them. A category
+ * with nothing visible anywhere underneath it is omitted entirely — it must never
+ * render as a dead-end tile (see lib/queries/categories.ts's computeVisibleSubtreeMap). */
+export async function getVisibleCategoryRoot(user: SessionUser): Promise<{
+  topLevel: CategoryTileData[];
+  uncategorised: CategoryMaterialRow[];
+}> {
+  const [nodes, directCounts, uncategorised] = await Promise.all([
+    getAllCategoryNodes(),
+    getDirectVisibleCounts(user),
+    prisma.material.findMany({
+      where: { AND: [visibleMaterialsWhere(user), { categoryId: null }] },
+      select: { id: true, title: true, kind: true },
+      orderBy: { createdAt: "desc" },
+    }),
+  ]);
+
+  const visibleSubtree = computeVisibleSubtreeMap(nodes, directCounts);
+  const childrenOf = new Map<string | null, CategoryNode[]>();
+  for (const node of nodes) {
+    childrenOf.set(node.parentId, [...(childrenOf.get(node.parentId) ?? []), node]);
+  }
+
+  const topLevel = (childrenOf.get(null) ?? [])
+    .filter((node) => visibleSubtree.get(node.id))
+    .map((node) => ({
+      id: node.id,
+      name: node.name,
+      slug: node.slug,
+      materialCount: directCounts.get(node.id) ?? 0,
+      childCount: (childrenOf.get(node.id) ?? []).filter((child) => visibleSubtree.get(child.id))
+        .length,
+    }));
+
+  return { topLevel, uncategorised };
+}
+
+/** Employee: one category's breadcrumbs, visible sub-categories, and directly-visible
+ * materials. Returns null both when the id doesn't exist AND when nothing in its
+ * subtree is visible to `user` — the same 404 either way, so a guesser can't tell
+ * "wrong id" from "exists but you can't see anything in it" (BUILD-PLAN §7, same
+ * principle as getVisibleMaterialById in lib/queries/materials.ts). */
+export async function getVisibleCategoryPage(
+  user: SessionUser,
+  id: string,
+): Promise<CategoryPageData | null> {
+  const [nodes, directCounts] = await Promise.all([getAllCategoryNodes(), getDirectVisibleCounts(user)]);
+  const visibleSubtree = computeVisibleSubtreeMap(nodes, directCounts);
+
+  if (!visibleSubtree.get(id)) return null;
+
+  const byId = new Map(nodes.map((node) => [node.id, node]));
+  const category = byId.get(id);
+  if (!category) return null;
+
+  const childrenOf = new Map<string | null, CategoryNode[]>();
+  for (const node of nodes) {
+    childrenOf.set(node.parentId, [...(childrenOf.get(node.parentId) ?? []), node]);
+  }
+
+  const materials = await prisma.material.findMany({
+    where: { AND: [visibleMaterialsWhere(user), { categoryId: id }] },
+    select: { id: true, title: true, kind: true },
+    orderBy: { createdAt: "desc" },
+  });
+
+  const children = (childrenOf.get(id) ?? [])
+    .filter((node) => visibleSubtree.get(node.id))
+    .map((node) => ({
+      id: node.id,
+      name: node.name,
+      slug: node.slug,
+      materialCount: directCounts.get(node.id) ?? 0,
+      childCount: (childrenOf.get(node.id) ?? []).filter((child) => visibleSubtree.get(child.id))
+        .length,
+    }));
+
+  return {
+    category: { id: category.id, name: category.name },
+    breadcrumbs: buildBreadcrumbTrail(nodes, id),
+    children,
     materials,
   };
 }
