@@ -10,6 +10,7 @@ import { cn } from "cn";
 import { DeleteConfirmButton } from "@/components/admin/delete-confirm-button";
 import { EditMaterialForm } from "./edit-material-form";
 import { ReplaceFileForm } from "./replace-file-form";
+import { MaterialPreview } from "./material-preview";
 import { deleteMaterial } from "./actions";
 
 export async function generateMetadata({
@@ -59,18 +60,7 @@ export default async function EditMaterialPage({
 
       {/* Confirms what was actually uploaded right after an upload or replace —
           the edit form below only ever touches metadata, never the file itself. */}
-      <div className="max-w-3xl overflow-hidden rounded-lg border">
-        {material.kind === "PDF" ? (
-          <iframe src={fileUrl} title={material.title} className="h-[70vh] w-full" />
-        ) : material.kind === "IMAGE" ? (
-          // eslint-disable-next-line @next/next/no-img-element -- served through our own auth-checked route, not a static asset next/image can optimize
-          <img src={fileUrl} alt={material.title} className="mx-auto max-h-[70vh] w-full object-contain" />
-        ) : (
-          <div className="flex h-48 items-center justify-center p-8 text-center text-sm text-muted-foreground">
-            No preview available for this file type — use Download above to view it.
-          </div>
-        )}
-      </div>
+      <MaterialPreview fileUrl={fileUrl} kind={material.kind} title={material.title} />
 
       <div className="max-w-xl space-y-8">
         {/* Keyed on updatedAt so a successful save remounts the form with fresh
