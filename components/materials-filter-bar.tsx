@@ -18,29 +18,31 @@ export function MaterialsFilterBar({
   selectedKind,
   search,
 }: {
-  categories: Category[];
+  categories?: Category[];
   selectedCategorySlug?: string;
   selectedKind?: "PDF" | "IMAGE" | "DOCUMENT";
   search?: string;
 }) {
   return (
     <form method="get" className="flex flex-wrap items-end gap-4 rounded-lg border p-4">
-      <div className="space-y-2">
-        <Label htmlFor="category-trigger">Category</Label>
-        <Select name="category" defaultValue={selectedCategorySlug ?? ""}>
-          <SelectTrigger id="category-trigger" className="w-44">
-            <SelectValue placeholder="All categories" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="">All categories</SelectItem>
-            {categories.map((category) => (
-              <SelectItem key={category.id} value={category.slug}>
-                {category.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      {categories ? (
+        <div className="space-y-2">
+          <Label htmlFor="category-trigger">Category</Label>
+          <Select name="category" defaultValue={selectedCategorySlug ?? ""}>
+            <SelectTrigger id="category-trigger" className="w-44">
+              <SelectValue placeholder="All categories" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All categories</SelectItem>
+              {categories.map((category) => (
+                <SelectItem key={category.id} value={category.slug}>
+                  {category.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      ) : null}
 
       <div className="space-y-2">
         <Label htmlFor="kind-trigger">Type</Label>
