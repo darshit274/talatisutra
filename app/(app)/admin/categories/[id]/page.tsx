@@ -4,10 +4,10 @@ import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/auth/session";
 import { getAdminCategoryPage } from "@/lib/queries/categories";
 import { prisma } from "@/lib/db/prisma";
-import { NewCategoryForm } from "@/app/(app)/admin/categories/new-category-form";
+import { CategoryFormDialog } from "@/app/(app)/admin/categories/category-form-dialog";
 import { CategoryUploadForm } from "@/app/(app)/admin/categories/category-upload-form";
 import { CategoryHeaderActions } from "@/app/(app)/admin/categories/category-header-actions";
-import { CategoryTile } from "@/components/category-tile";
+import { AdminCategoryTile } from "@/app/(app)/admin/categories/admin-category-tile";
 import { MaterialRow } from "@/components/material-row";
 
 export async function generateMetadata({
@@ -77,10 +77,12 @@ export default async function AdminCategoryPage({
         {children.length > 0 ? (
           <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
             {children.map((child) => (
-              <CategoryTile
+              <AdminCategoryTile
                 key={child.id}
+                id={child.id}
                 href={`/admin/categories/${child.id}`}
                 name={child.name}
+                description={child.description}
                 materialCount={child.materialCount}
                 childCount={child.childCount}
               />
@@ -89,9 +91,7 @@ export default async function AdminCategoryPage({
         ) : (
           <p className="text-sm text-muted-foreground">No sub-categories yet.</p>
         )}
-        <div className="rounded-lg border p-4">
-          <NewCategoryForm parentId={category.id} />
-        </div>
+        <CategoryFormDialog mode="create" parentId={category.id} triggerLabel="New sub-category" />
       </div>
 
       <div className="space-y-3">

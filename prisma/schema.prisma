@@ -33,26 +33,26 @@ model Department {
 }
 
 model User {
-  id                 String                @id @default(cuid())
+  id                 String               @id @default(cuid())
   name               String
-  email              String                @unique
+  email              String               @unique
   passwordHash       String
-  role               Role                  @default(EMPLOYEE)
+  role               Role                 @default(EMPLOYEE)
   departmentId       String?
-  department         Department?           @relation(fields: [departmentId], references: [id], onDelete: SetNull)
-  employeeCode       String?               @unique
+  department         Department?          @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  employeeCode       String?              @unique
   designation        String?
   phone              String?
-  isActive           Boolean               @default(true)
-  mustChangePassword Boolean               @default(false)
-  emailVerified      Boolean               @default(true)
+  isActive           Boolean              @default(true)
+  mustChangePassword Boolean              @default(false)
+  emailVerified      Boolean              @default(true)
   lastLoginAt        DateTime?
   sessions           Session[]
   resetTokens        PasswordResetToken[]
   emailOtps          EmailOtp[]
-  uploads            Material[]            @relation("UploadedBy")
-  createdAt          DateTime              @default(now())
-  updatedAt          DateTime              @updatedAt
+  uploads            Material[]           @relation("UploadedBy")
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
 
   @@index([departmentId])
 }
@@ -114,14 +114,15 @@ model LoginAttempt {
 }
 
 model Category {
-  id        String     @id @default(cuid())
-  name      String     @unique
-  slug      String     @unique
-  sortOrder Int        @default(0)
-  parentId  String?
-  parent    Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
-  children  Category[] @relation("CategoryHierarchy")
-  materials Material[]
+  id          String     @id @default(cuid())
+  name        String     @unique
+  slug        String     @unique
+  description String?    @db.Text
+  sortOrder   Int        @default(0)
+  parentId    String?
+  parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children    Category[] @relation("CategoryHierarchy")
+  materials   Material[]
 
   @@index([parentId])
 }

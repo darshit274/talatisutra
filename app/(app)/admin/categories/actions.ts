@@ -20,7 +20,10 @@ export async function createCategory(
   formData: FormData,
 ): Promise<CategoryFormState> {
   const admin = await requireAdmin("/admin/categories");
-  const parsed = categorySchema.safeParse({ name: formData.get("name") });
+  const parsed = categorySchema.safeParse({
+    name: formData.get("name"),
+    description: formData.get("description"),
+  });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Enter a name." };
   }
@@ -39,7 +42,13 @@ export async function createCategory(
 
   const count = await prisma.category.count({ where: { parentId } });
   const category = await prisma.category.create({
-    data: { name: parsed.data.name, slug: slugify(parsed.data.name), sortOrder: count, parentId },
+    data: {
+      name: parsed.data.name,
+      slug: slugify(parsed.data.name),
+      description: parsed.data.description || null,
+      sortOrder: count,
+      parentId,
+    },
   });
 
   await writeAuditLog({
@@ -62,7 +71,10 @@ export async function updateCategory(
   formData: FormData,
 ): Promise<CategoryFormState> {
   const admin = await requireAdmin("/admin/categories");
-  const parsed = categorySchema.safeParse({ name: formData.get("name") });
+  const parsed = categorySchema.safeParse({
+    name: formData.get("name"),
+    description: formData.get("description"),
+  });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Enter a name." };
   }
@@ -74,7 +86,11 @@ export async function updateCategory(
 
   await prisma.category.update({
     where: { id },
-    data: { name: parsed.data.name, slug: slugify(parsed.data.name) },
+    data: {
+      name: parsed.data.name,
+      slug: slugify(parsed.data.name),
+      description: parsed.data.description || null,
+    },
   });
 
   await writeAuditLog({

@@ -89,10 +89,25 @@ export interface CategoryPageData {
   materials: CategoryMaterialRow[];
 }
 
+/** Admin-only tile shape — adds `description` (needed to pre-fill the edit dialog)
+ * on top of the shared `CategoryTileData` the employee-facing tiles use. Kept
+ * separate from `CategoryTileData` itself so the employee-side queries/components
+ * never need to know about a field they don't display. */
+export interface AdminCategoryTileData extends CategoryTileData {
+  description: string | null;
+}
+
+export interface AdminCategoryPageData {
+  category: { id: string; name: string; description: string | null };
+  breadcrumbs: CategoryNode[];
+  children: AdminCategoryTileData[];
+  materials: CategoryMaterialRow[];
+}
+
 /** Admin: every top-level category's direct material + child counts, regardless of
  * visibility — admins see everything. */
 export async function getAdminCategoryRoot(): Promise<{
-  topLevel: CategoryTileData[];
+  topLevel: AdminCategoryTileData[];
   uncategorised: CategoryMaterialRow[];
 }> {
   const [categories, uncategorised] = await Promise.all([
@@ -113,6 +128,7 @@ export async function getAdminCategoryRoot(): Promise<{
       id: c.id,
       name: c.name,
       slug: c.slug,
+      description: c.description,
       materialCount: c._count.materials,
       childCount: c._count.children,
     })),
@@ -122,7 +138,7 @@ export async function getAdminCategoryRoot(): Promise<{
 
 /** Admin: one category's breadcrumbs, direct sub-categories, and direct materials.
  * Returns null only if the category id doesn't exist. */
-export async function getAdminCategoryPage(id: string): Promise<CategoryPageData | null> {
+export async function getAdminCategoryPage(id: string): Promise<AdminCategoryPageData | null> {
   const category = await prisma.category.findUnique({ where: { id } });
   if (!category) return null;
 
@@ -141,12 +157,13 @@ export async function getAdminCategoryPage(id: string): Promise<CategoryPageData
   ]);
 
   return {
-    category: { id: category.id, name: category.name },
+    category: { id: category.id, name: category.name, description: category.description },
     breadcrumbs: buildBreadcrumbTrail(nodes, id),
     children: children.map((c) => ({
       id: c.id,
       name: c.name,
       slug: c.slug,
+      description: c.description,
       materialCount: c._count.materials,
       childCount: c._count.children,
     })),

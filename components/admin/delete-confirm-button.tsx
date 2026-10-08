@@ -25,6 +25,11 @@ import { cn } from "cn";
  * children) and wants to say so up front rather than let the user open the dialog
  * and hit a server-side rejection. `disabledReason` becomes the button's native
  * `title` attribute (a hover tooltip) explaining why.
+ *
+ * `emphasized` swaps the default low-key ghost-text trigger for the design
+ * system's tinted `destructive` button variant, for the rare case where a delete
+ * button sits alone (not in a dense list row) and needs to read clearly at a
+ * glance. Every existing caller omits it and keeps today's subtle look.
  */
 export function DeleteConfirmButton({
   action,
@@ -34,6 +39,7 @@ export function DeleteConfirmButton({
   triggerClassName,
   disabled = false,
   disabledReason,
+  emphasized = false,
 }: {
   action: () => Promise<void>;
   title: string;
@@ -42,7 +48,11 @@ export function DeleteConfirmButton({
   triggerClassName?: string;
   disabled?: boolean;
   disabledReason?: string;
+  emphasized?: boolean;
 }) {
+  const triggerVariant = emphasized ? "destructive" : "ghost";
+  const triggerVariantClassName = emphasized ? undefined : "text-destructive";
+
   if (disabled) {
     return (
       <button
@@ -50,7 +60,7 @@ export function DeleteConfirmButton({
         disabled
         title={disabledReason}
         className={cn(
-          buttonVariants({ variant: "ghost", size: "sm", className: "text-destructive" }),
+          buttonVariants({ variant: triggerVariant, size: "sm", className: triggerVariantClassName }),
           "cursor-not-allowed opacity-50",
           triggerClassName,
         )}
@@ -64,7 +74,7 @@ export function DeleteConfirmButton({
     <AlertDialog>
       <AlertDialogTrigger
         className={cn(
-          buttonVariants({ variant: "ghost", size: "sm", className: "text-destructive" }),
+          buttonVariants({ variant: triggerVariant, size: "sm", className: triggerVariantClassName }),
           triggerClassName,
         )}
       >
