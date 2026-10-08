@@ -15,6 +15,7 @@ export async function generateMetadata({
 }: {
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
+  await requireAdmin("/admin/categories");
   const { id } = await params;
   const data = await getAdminCategoryPage(id);
   return { title: data?.category.name ?? "Category" };
@@ -65,7 +66,7 @@ export default async function AdminCategoryPage({
 
       {error === "has-children" ? (
         <p className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
-          Delete the sub-categories and materials in this category first.
+          {`Delete the ${children.length} sub-categor${children.length === 1 ? "y" : "ies"} and ${materials.length} material${materials.length === 1 ? "" : "s"} in this category first.`}
         </p>
       ) : null}
 

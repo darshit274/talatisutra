@@ -30,6 +30,13 @@ export async function createCategory(
     return { error: "A category with this name already exists." };
   }
 
+  if (parentId) {
+    const parent = await prisma.category.findUnique({ where: { id: parentId } });
+    if (!parent) {
+      return { error: "Parent category not found." };
+    }
+  }
+
   const count = await prisma.category.count({ where: { parentId } });
   const category = await prisma.category.create({
     data: { name: parsed.data.name, slug: slugify(parsed.data.name), sortOrder: count, parentId },

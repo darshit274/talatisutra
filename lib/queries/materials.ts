@@ -1,6 +1,7 @@
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import type { SessionUser } from "@/lib/auth/session";
+import { getVisibleCategoryRoot } from "@/lib/queries/categories";
 
 /**
  * BUILD-PLAN §5 "The one query that matters" — the single source of truth for what an
@@ -113,31 +114,32 @@ export interface PortalSummary {
 }
 
 /** Powers /portal: a handful of recently added materials, plus a per-category count —
- * both scoped to what `user` can actually see. */
+ * both scoped to what `user` can actually see. The tiles use `getVisibleCategoryRoot`
+ * (lib/queries/categories.ts) rather than a raw top-level category query, so a tile
+ * only appears when something is visible anywhere in its subtree, and its count
+ * reflects that same subtree-visibility scoping — otherwise the tile here and the
+ * `/portal/materials/category/[id]` page it links to (which uses the same function)
+ * can disagree, producing either a dead-end 404 or a misleading "0 items" count. */
 export async function getPortalSummary(user: SessionUser): Promise<PortalSummary> {
   const where: Prisma.MaterialWhereInput = user.role === "ADMIN" ? {} : visibleMaterialsWhere(user);
 
-  const [recent, categories] = await Promise.all([
+  const [recent, { topLevel }] = await Promise.all([
     prisma.material.findMany({
       where,
       include: materialListInclude,
       orderBy: { createdAt: "desc" },
       take: 5,
     }),
-    prisma.category.findMany({
-      where: { parentId: null },
-      orderBy: { sortOrder: "asc" },
-      include: { _count: { select: { materials: { where } } } },
-    }),
+    getVisibleCategoryRoot(user),
   ]);
 
   return {
     recent,
-    categoryCounts: categories.map((category) => ({
+    categoryCounts: topLevel.map((category) => ({
       id: category.id,
       name: category.name,
       slug: category.slug,
-      count: category._count.materials,
+      count: category.materialCount,
     })),
   };
 }

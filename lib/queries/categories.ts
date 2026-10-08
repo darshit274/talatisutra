@@ -157,9 +157,10 @@ export async function getAdminCategoryPage(id: string): Promise<CategoryPageData
 /** Direct-visible material count per category, for the whole tree at once — one
  * grouped query rather than one count query per category. */
 async function getDirectVisibleCounts(user: SessionUser): Promise<Map<string, number>> {
+  const visibilityWhere = user.role === "ADMIN" ? {} : visibleMaterialsWhere(user);
   const grouped = await prisma.material.groupBy({
     by: ["categoryId"],
-    where: { AND: [visibleMaterialsWhere(user), { categoryId: { not: null } }] },
+    where: { AND: [visibilityWhere, { categoryId: { not: null } }] },
     _count: true,
   });
   return new Map(grouped.map((g) => [g.categoryId as string, g._count]));
