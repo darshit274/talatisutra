@@ -174,11 +174,12 @@ export async function getVisibleCategoryRoot(user: SessionUser): Promise<{
   topLevel: CategoryTileData[];
   uncategorised: CategoryMaterialRow[];
 }> {
+  const visibilityWhere = user.role === "ADMIN" ? {} : visibleMaterialsWhere(user);
   const [nodes, directCounts, uncategorised] = await Promise.all([
     getAllCategoryNodes(),
     getDirectVisibleCounts(user),
     prisma.material.findMany({
-      where: { AND: [visibleMaterialsWhere(user), { categoryId: null }] },
+      where: { AND: [visibilityWhere, { categoryId: null }] },
       select: { id: true, title: true, kind: true },
       orderBy: { createdAt: "desc" },
     }),
@@ -227,8 +228,9 @@ export async function getVisibleCategoryPage(
     childrenOf.set(node.parentId, [...(childrenOf.get(node.parentId) ?? []), node]);
   }
 
+  const visibilityWhere = user.role === "ADMIN" ? {} : visibleMaterialsWhere(user);
   const materials = await prisma.material.findMany({
-    where: { AND: [visibleMaterialsWhere(user), { categoryId: id }] },
+    where: { AND: [visibilityWhere, { categoryId: id }] },
     select: { id: true, title: true, kind: true },
     orderBy: { createdAt: "desc" },
   });
