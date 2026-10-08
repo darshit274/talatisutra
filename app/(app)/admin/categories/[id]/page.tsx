@@ -1,0 +1,118 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { requireAdmin } from "@/lib/auth/session";
+import { getAdminCategoryPage } from "@/lib/queries/categories";
+import { prisma } from "@/lib/db/prisma";
+import { NewCategoryForm } from "@/app/(app)/admin/categories/new-category-form";
+import { CategoryUploadForm } from "@/app/(app)/admin/categories/category-upload-form";
+import { CategoryHeaderActions } from "@/app/(app)/admin/categories/category-header-actions";
+import { CategoryTile } from "@/components/category-tile";
+import { MaterialRow } from "@/components/material-row";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const data = await getAdminCategoryPage(id);
+  return { title: data?.category.name ?? "Category" };
+}
+
+export default async function AdminCategoryPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ error?: string }>;
+}) {
+  await requireAdmin("/admin/categories");
+  const { id } = await params;
+  const { error } = await searchParams;
+
+  const [data, departments] = await Promise.all([
+    getAdminCategoryPage(id),
+    prisma.department.findMany({ orderBy: { name: "asc" } }),
+  ]);
+
+  if (!data) {
+    notFound();
+  }
+
+  const { category, breadcrumbs, children, materials } = data;
+  const canDelete = children.length === 0 && materials.length === 0;
+
+  return (
+    <div className="space-y-8">
+      <nav className="flex items-center gap-1 text-sm text-muted-foreground" aria-label="Breadcrumb">
+        <Link href="/admin/categories" className="hover:text-foreground">
+          Categories
+        </Link>
+        {breadcrumbs.map((crumb) => (
+          <span key={crumb.id} className="flex items-center gap-1">
+            <span aria-hidden="true">/</span>
+            {crumb.id === id ? (
+              <span className="text-foreground">{crumb.name}</span>
+            ) : (
+              <Link href={`/admin/categories/${crumb.id}`} className="hover:text-foreground">
+                {crumb.name}
+              </Link>
+            )}
+          </span>
+        ))}
+      </nav>
+
+      {error === "has-children" ? (
+        <p className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+          Delete the sub-categories and materials in this category first.
+        </p>
+      ) : null}
+
+      <CategoryHeaderActions category={category} canDelete={canDelete} />
+
+      <div className="space-y-3">
+        <h2 className="text-lg font-medium">Sub-categories</h2>
+        {children.length > 0 ? (
+          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+            {children.map((child) => (
+              <CategoryTile
+                key={child.id}
+                href={`/admin/categories/${child.id}`}
+                name={child.name}
+                materialCount={child.materialCount}
+                childCount={child.childCount}
+              />
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">No sub-categories yet.</p>
+        )}
+        <div className="rounded-lg border p-4">
+          <NewCategoryForm parentId={category.id} />
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <h2 className="text-lg font-medium">Materials in this category</h2>
+        {materials.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No materials in this category yet.</p>
+        ) : (
+          <div className="divide-y rounded-lg border">
+            {materials.map((material) => (
+              <MaterialRow
+                key={material.id}
+                href={`/admin/materials/${material.id}`}
+                material={material}
+              />
+            ))}
+          </div>
+        )}
+        <div className="rounded-lg border p-4">
+          <h3 className="mb-3 text-sm font-medium">Upload a material into this category</h3>
+          <CategoryUploadForm categoryId={category.id} departments={departments} />
+        </div>
+      </div>
+    </div>
+  );
+}
