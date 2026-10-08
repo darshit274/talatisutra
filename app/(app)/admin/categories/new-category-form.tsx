@@ -7,8 +7,8 @@ import { createCategory, type CategoryFormState } from "./actions";
 
 const initialState: CategoryFormState = {};
 
-export function NewCategoryForm() {
-  const [state, formAction, pending] = useActionState(createCategory, initialState);
+export function NewCategoryForm({ parentId }: { parentId: string | null }) {
+  const [state, formAction, pending] = useActionState(createCategory.bind(null, parentId), initialState);
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
@@ -21,7 +21,7 @@ export function NewCategoryForm() {
     <form ref={formRef} action={formAction} className="flex flex-wrap items-end gap-2">
       <div className="space-y-2">
         <label htmlFor="new-category-name" className="text-sm font-medium">
-          New category
+          {parentId ? "New sub-category" : "New category"}
         </label>
         <Input id="new-category-name" name="name" placeholder="e.g. Announcements" className="w-56" />
       </div>
