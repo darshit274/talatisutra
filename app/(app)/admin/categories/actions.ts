@@ -15,6 +15,7 @@ export interface CategoryFormState {
 }
 
 export async function createCategory(
+  parentId: string | null,
   _prevState: CategoryFormState,
   formData: FormData,
 ): Promise<CategoryFormState> {
@@ -29,9 +30,9 @@ export async function createCategory(
     return { error: "A category with this name already exists." };
   }
 
-  const count = await prisma.category.count();
+  const count = await prisma.category.count({ where: { parentId } });
   const category = await prisma.category.create({
-    data: { name: parsed.data.name, slug: slugify(parsed.data.name), sortOrder: count },
+    data: { name: parsed.data.name, slug: slugify(parsed.data.name), sortOrder: count, parentId },
   });
 
   await writeAuditLog({
@@ -39,11 +40,12 @@ export async function createCategory(
     action: "category.create",
     entity: "Category",
     entityId: category.id,
-    meta: { name: category.name },
+    meta: { name: category.name, parentId: category.parentId },
     ip: getClientIp(await headers()),
   });
 
   revalidatePath("/admin/categories");
+  if (parentId) revalidatePath(`/admin/categories/${parentId}`);
   return {};
 }
 
@@ -83,22 +85,29 @@ export async function updateCategory(
 
 export async function deleteCategory(id: string): Promise<void> {
   const admin = await requireAdmin("/admin/categories");
-  const category = await prisma.category.findUnique({ where: { id } });
+  const category = await prisma.category.findUnique({
+    where: { id },
+    include: { _count: { select: { children: true, materials: true } } },
+  });
 
-  if (category) {
-    // Material.categoryId is SetNull on delete — materials aren't removed, they just
-    // lose this category.
-    await prisma.category.delete({ where: { id } });
-
-    await writeAuditLog({
-      actor: admin,
-      action: "category.delete",
-      entity: "Category",
-      entityId: id,
-      meta: { name: category.name },
-      ip: getClientIp(await headers()),
-    });
+  if (!category) {
+    redirect("/admin/categories");
   }
 
-  redirect("/admin/categories");
+  if (category._count.children > 0 || category._count.materials > 0) {
+    redirect(`/admin/categories/${id}?error=has-children`);
+  }
+
+  await prisma.category.delete({ where: { id } });
+
+  await writeAuditLog({
+    actor: admin,
+    action: "category.delete",
+    entity: "Category",
+    entityId: id,
+    meta: { name: category.name },
+    ip: getClientIp(await headers()),
+  });
+
+  redirect(category.parentId ? `/admin/categories/${category.parentId}` : "/admin/categories");
 }
