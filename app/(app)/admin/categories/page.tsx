@@ -66,10 +66,11 @@ export default async function AdminCategoriesPage() {
             ))}
           </div>
         )}
-        <div className="rounded-lg border p-4">
-          <h3 className="mb-3 text-sm font-medium">Upload an uncategorised material</h3>
-          <CategoryUploadForm categoryId={null} departments={departments} />
-        </div>
+        <CategoryUploadForm
+          categoryId={null}
+          departments={departments}
+          triggerLabel="Upload an uncategorised material"
+        />
       </div>
     </div>
   );

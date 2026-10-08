@@ -109,10 +109,11 @@ export default async function AdminCategoryPage({
             ))}
           </div>
         )}
-        <div className="rounded-lg border p-4">
-          <h3 className="mb-3 text-sm font-medium">Upload a material into this category</h3>
-          <CategoryUploadForm categoryId={category.id} departments={departments} />
-        </div>
+        <CategoryUploadForm
+          categoryId={category.id}
+          departments={departments}
+          triggerLabel="Upload a material into this category"
+        />
       </div>
     </div>
   );

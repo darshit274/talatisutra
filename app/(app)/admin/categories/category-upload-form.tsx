@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,15 +11,22 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 // File upload goes through this route handler via fetch, not a Server Action
 // (BUILD-PLAN "Working conventions" — Server Actions have a smaller body-size limit).
+//
+// Collapsed behind a trigger button by default — a Server Component can't pass a
+// render-prop/function as children across the RSC boundary, so the open/closed
+// state lives here rather than in a separate wrapper component.
 export function CategoryUploadForm({
   categoryId,
   departments,
+  triggerLabel,
 }: {
   categoryId: string | null;
   departments: Array<{ id: string; name: string }>;
+  triggerLabel: string;
 }) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
+  const [open, setOpen] = useState(false);
   const [restricted, setRestricted] = useState(false);
   const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -61,6 +69,7 @@ export function CategoryUploadForm({
       setRestricted(false);
       setSelectedDepartments([]);
       router.refresh();
+      setOpen(false);
     } catch {
       setError("Something went wrong. Try again.");
     } finally {
@@ -68,76 +77,94 @@ export function CategoryUploadForm({
     }
   }
 
+  if (!open) {
+    return (
+      <Button variant="outline" onClick={() => setOpen(true)}>
+        <Plus className="size-4" aria-hidden="true" />
+        {triggerLabel}
+      </Button>
+    );
+  }
+
   return (
-    <form
-      ref={formRef}
-      onSubmit={handleSubmit}
-      method="post"
-      action="/api/materials/upload"
-      encType="multipart/form-data"
-      className="max-w-xl space-y-4"
-    >
-      <input type="hidden" name="categoryId" value={categoryId ?? ""} />
-
-      <div className="space-y-2">
-        <Label htmlFor="title">Title</Label>
-        <Input id="title" name="title" required />
+    <div className="rounded-lg border p-4">
+      <div className="mb-3 flex items-center justify-between">
+        <h3 className="text-sm font-medium">{triggerLabel}</h3>
+        <Button type="button" variant="ghost" size="sm" onClick={() => setOpen(false)}>
+          Cancel
+        </Button>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="description">Description (optional)</Label>
-        <Textarea id="description" name="description" rows={3} />
-      </div>
+      <form
+        ref={formRef}
+        onSubmit={handleSubmit}
+        method="post"
+        action="/api/materials/upload"
+        encType="multipart/form-data"
+        className="max-w-xl space-y-4"
+      >
+        <input type="hidden" name="categoryId" value={categoryId ?? ""} />
 
-      <div className="space-y-2">
-        <Label htmlFor="file">File (PDF, PNG, JPEG, WebP, DOC or DOCX — max 25 MB)</Label>
-        <Input
-          id="file"
-          name="file"
-          type="file"
-          accept=".pdf,.png,.jpg,.jpeg,.webp,.doc,.docx"
-          required
-        />
-      </div>
-
-      <input type="hidden" name="visibility" value={restricted ? "DEPARTMENTS" : "ALL"} />
-      <div className="space-y-3 rounded-lg border p-4">
-        <div className="flex items-center gap-2">
-          <Checkbox
-            id="restrict"
-            checked={restricted}
-            onCheckedChange={(checked) => setRestricted(checked)}
-          />
-          <Label htmlFor="restrict">Restrict to specific departments</Label>
+        <div className="space-y-2">
+          <Label htmlFor="title">Title</Label>
+          <Input id="title" name="title" required />
         </div>
 
-        {restricted ? (
-          <div className="grid gap-2 sm:grid-cols-2">
-            {departments.map((department) => (
-              <div key={department.id} className="flex items-center gap-2">
-                <Checkbox
-                  id={`dept-${department.id}`}
-                  name="departmentIds"
-                  value={department.id}
-                  checked={selectedDepartments.includes(department.id)}
-                  onCheckedChange={(checked) => toggleDepartment(department.id, checked)}
-                />
-                <Label htmlFor={`dept-${department.id}`}>{department.name}</Label>
-              </div>
-            ))}
+        <div className="space-y-2">
+          <Label htmlFor="description">Description (optional)</Label>
+          <Textarea id="description" name="description" rows={3} />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="file">File (PDF, PNG, JPEG, WebP, DOC or DOCX — max 25 MB)</Label>
+          <Input
+            id="file"
+            name="file"
+            type="file"
+            accept=".pdf,.png,.jpg,.jpeg,.webp,.doc,.docx"
+            required
+          />
+        </div>
+
+        <input type="hidden" name="visibility" value={restricted ? "DEPARTMENTS" : "ALL"} />
+        <div className="space-y-3 rounded-lg border p-4">
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="restrict"
+              checked={restricted}
+              onCheckedChange={(checked) => setRestricted(checked)}
+            />
+            <Label htmlFor="restrict">Restrict to specific departments</Label>
           </div>
-        ) : (
-          <p className="text-sm text-muted-foreground">
-            Visible to every signed-in user, including self-registered accounts.
-          </p>
-        )}
-      </div>
 
-      {error ? <p className="text-sm text-destructive">{error}</p> : null}
+          {restricted ? (
+            <div className="grid gap-2 sm:grid-cols-2">
+              {departments.map((department) => (
+                <div key={department.id} className="flex items-center gap-2">
+                  <Checkbox
+                    id={`dept-${department.id}`}
+                    name="departmentIds"
+                    value={department.id}
+                    checked={selectedDepartments.includes(department.id)}
+                    onCheckedChange={(checked) => toggleDepartment(department.id, checked)}
+                  />
+                  <Label htmlFor={`dept-${department.id}`}>{department.name}</Label>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Visible to every signed-in user, including self-registered accounts.
+            </p>
+          )}
+        </div>
 
-      <Button type="submit" disabled={pending}>
-        {pending ? "Uploading…" : "Upload"}
-      </Button>
-    </form>
+        {error ? <p className="text-sm text-destructive">{error}</p> : null}
+
+        <Button type="submit" disabled={pending}>
+          {pending ? "Uploading…" : "Upload"}
+        </Button>
+      </form>
+    </div>
   );
 }
