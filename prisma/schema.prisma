@@ -23,6 +23,20 @@ enum Visibility {
   DEPARTMENTS
 }
 
+enum SitePage {
+  HOME
+  ABOUT
+  SERVICES
+  CONTACT
+}
+
+enum ContentBlockType {
+  HERO
+  TEXT
+  CARD_GRID
+  CTA_BAND
+}
+
 model Department {
   id        String               @id @default(cuid())
   name      String               @unique
@@ -33,26 +47,27 @@ model Department {
 }
 
 model User {
-  id                 String               @id @default(cuid())
-  name               String
-  email              String               @unique
-  passwordHash       String
-  role               Role                 @default(EMPLOYEE)
-  departmentId       String?
-  department         Department?          @relation(fields: [departmentId], references: [id], onDelete: SetNull)
-  employeeCode       String?              @unique
-  designation        String?
-  phone              String?
-  isActive           Boolean              @default(true)
-  mustChangePassword Boolean              @default(false)
-  emailVerified      Boolean              @default(true)
-  lastLoginAt        DateTime?
-  sessions           Session[]
-  resetTokens        PasswordResetToken[]
-  emailOtps          EmailOtp[]
-  uploads            Material[]           @relation("UploadedBy")
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @updatedAt
+  id                   String               @id @default(cuid())
+  name                 String
+  email                String               @unique
+  passwordHash         String
+  role                 Role                 @default(EMPLOYEE)
+  departmentId         String?
+  department           Department?          @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  employeeCode         String?              @unique
+  designation          String?
+  phone                String?
+  isActive             Boolean              @default(true)
+  mustChangePassword   Boolean              @default(false)
+  emailVerified        Boolean              @default(true)
+  lastLoginAt          DateTime?
+  sessions             Session[]
+  resetTokens          PasswordResetToken[]
+  emailOtps            EmailOtp[]
+  uploads              Material[]           @relation("UploadedBy")
+  updatedContentBlocks ContentBlock[]       @relation("ContentBlockUpdatedBy")
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
 
   @@index([departmentId])
 }
@@ -125,6 +140,19 @@ model Category {
   materials   Material[]
 
   @@index([parentId])
+}
+
+model ContentBlock {
+  id          String           @id @default(cuid())
+  page        SitePage
+  type        ContentBlockType
+  sortOrder   Int
+  data        Json
+  updatedAt   DateTime         @updatedAt
+  updatedById String?
+  updatedBy   User?            @relation("ContentBlockUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([page, sortOrder])
 }
 
 model Material {
