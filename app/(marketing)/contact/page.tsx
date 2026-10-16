@@ -1,23 +1,20 @@
 import type { Metadata } from "next";
+import { getPageBlocks } from "@/lib/queries/content";
+import { BlockRenderer } from "@/components/content/block-renderer";
 import { ContactForm } from "./contact-form";
 
 export const metadata: Metadata = {
   title: "Contact",
 };
 
-// Placeholder copy — replace with the client's real contact details (BUILD-PLAN §14).
-export default function ContactPage() {
+export default async function ContactPage() {
+  const blocks = await getPageBlocks("CONTACT");
   return (
-    <div className="mx-auto max-w-3xl px-4 py-16">
-      <h1 className="text-3xl font-semibold tracking-tight">Contact us</h1>
-      <p className="mt-4 text-muted-foreground">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Send us a message and
-        we&apos;ll get back to you.
-      </p>
-
-      <div className="mt-10">
+    <>
+      <BlockRenderer blocks={blocks} />
+      <div className="mx-auto max-w-3xl px-4 pb-16">
         <ContactForm />
       </div>
-    </div>
+    </>
   );
 }
