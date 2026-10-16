@@ -48,23 +48,47 @@ export function ContentBlockFormDialog(props: Props) {
   const [state, formAction, pending] = useActionState(action, initialState);
   const formRef = useRef<HTMLFormElement>(null);
 
+  // Success detection is split across three single-setState effects (rather than one
+  // effect calling setOpen/setType/setData together) because this project's
+  // react-hooks lint flags multiple setState calls in one effect body as a cascading-
+  // render risk. All three read the same `wasPending` guard, and a fourth, setState-free
+  // effect is the only thing that ever advances that guard — it must not be gated on
+  // `props.mode`, or edit-mode submits would never update it and the guard would go
+  // stale.
   const wasPending = useRef(false);
+
   useEffect(() => {
     if (wasPending.current && !pending && !state.error) {
       setOpen(false);
     }
-    wasPending.current = pending;
   }, [pending, state.error]);
+
+  useEffect(() => {
+    if (props.mode === "create" && wasPending.current && !pending && !state.error) {
+      setType(null);
+    }
+  }, [pending, state.error, props.mode]);
+
+  useEffect(() => {
+    if (props.mode === "create" && wasPending.current && !pending && !state.error) {
+      setData(EMPTY_DATA.HERO);
+    }
+  }, [pending, state.error, props.mode]);
+
+  useEffect(() => {
+    wasPending.current = pending;
+  }, [pending]);
 
   function pickType(next: ContentBlockType) {
     setType(next);
     setData(EMPTY_DATA[next]);
   }
 
-  // Reset the create-mode picker back to "no type chosen" whenever the dialog closes,
-  // whether that's a successful submit (above) or the admin cancelling out — either way
-  // the next "+ Add block" open should start from the type picker again, not wherever
-  // they left off.
+  // Reset the create-mode picker back to "no type chosen" when the admin cancels out
+  // of the dialog without submitting (the success path above handles the submit case —
+  // this `onOpenChange` callback only fires for user/library-driven closes such as
+  // Escape, outside-press, or a `Dialog.Close`, never for our own `setOpen(false)` in
+  // the effects above, so the two paths are complementary, not overlapping).
   function handleOpenChange(next: boolean) {
     setOpen(next);
     if (!next && props.mode === "create") {
