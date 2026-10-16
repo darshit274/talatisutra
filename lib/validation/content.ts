@@ -1,5 +1,14 @@
 import { z } from "zod";
 import type { ContentBlockType } from "@prisma/client";
+// Imported from the dependency-free ./filename module rather than ./storage, because this
+// file is also imported by client components and storage.ts pulls in node:fs and
+// @/lib/env (which throws without server env vars).
+import { SITE_IMAGE_FILENAME_PATTERN } from "@/lib/site-images/filename";
+
+// An imageKey flows into deleteSiteImage() -> path.join(STORAGE_DIR, "site-images", key)
+// -> unlink() when it's orphaned, so it must be shaped exactly like an upload-produced
+// filename — never anything containing a separator or `..` (CLAUDE.md rule 5).
+const imageKeySchema = z.string().regex(SITE_IMAGE_FILENAME_PATTERN, "Invalid image key.").nullable();
 
 const buttonSchema = z.object({
   label: z.string().trim().min(1, "Button label is required.").max(60),
@@ -10,7 +19,7 @@ export const heroBlockDataSchema = z.object({
   heading: z.string().trim().min(1, "Heading is required.").max(200),
   subtext: z.string().trim().max(1000),
   buttons: z.array(buttonSchema).max(4),
-  imageKey: z.string().nullable(),
+  imageKey: imageKeySchema,
 });
 export type HeroBlockData = z.infer<typeof heroBlockDataSchema>;
 
@@ -23,7 +32,7 @@ export type TextBlockData = z.infer<typeof textBlockDataSchema>;
 const cardSchema = z.object({
   title: z.string().trim().min(1, "Card title is required.").max(120),
   body: z.string().trim().min(1, "Card body is required.").max(1000),
-  imageKey: z.string().nullable(),
+  imageKey: imageKeySchema,
 });
 
 export const cardGridBlockDataSchema = z.object({

@@ -6,7 +6,10 @@ import { SitePage, type ContentBlock } from "@prisma/client";
 export async function getPageBlocks(page: SitePage): Promise<ContentBlock[]> {
   return prisma.contentBlock.findMany({
     where: { page },
-    orderBy: { sortOrder: "asc" },
+    // `id` is a stable tie-breaker so rows that share a sortOrder (possible for rows
+    // created before createContentBlock switched from count() to max+1) still render in
+    // a deterministic order.
+    orderBy: [{ sortOrder: "asc" }, { id: "asc" }],
   });
 }
 

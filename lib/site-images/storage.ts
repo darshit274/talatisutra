@@ -5,10 +5,9 @@ import { env } from "@/lib/env";
 
 export const MAX_SITE_IMAGE_BYTES = 5 * 1024 * 1024; // 5 MB — smaller than materials' 25 MB
 
-// Exactly the shape writeSiteImage produces: a random UUID plus a sniffed extension.
-// The public GET route rejects anything that doesn't match this before touching the
-// filesystem (spec §2) — the sole defense against path traversal for this route.
-export const SITE_IMAGE_FILENAME_PATTERN = /^[0-9a-f-]+\.(png|jpe?g|webp)$/;
+// Defined in ./filename (dependency-free, so client-imported validation code can use it)
+// and re-exported here for the existing server-side callers.
+export { SITE_IMAGE_FILENAME_PATTERN } from "./filename";
 
 export function siteImageFilePath(key: string): string {
   return path.join(env.STORAGE_DIR, "site-images", key);

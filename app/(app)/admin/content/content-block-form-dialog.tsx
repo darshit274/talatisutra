@@ -84,16 +84,28 @@ export function ContentBlockFormDialog(props: Props) {
     setData(EMPTY_DATA[next]);
   }
 
-  // Reset the create-mode picker back to "no type chosen" when the admin cancels out
-  // of the dialog without submitting (the success path above handles the submit case —
-  // this `onOpenChange` callback only fires for user/library-driven closes such as
-  // Escape, outside-press, or a `Dialog.Close`, never for our own `setOpen(false)` in
-  // the effects above, so the two paths are complementary, not overlapping).
+  // The last action state whose error the admin dismissed by closing the dialog.
+  // useActionState can't be reset from outside, so instead of clearing `state.error` we
+  // hide it until a new submit produces a new state object.
+  const [dismissedState, setDismissedState] = useState<ContentBlockFormState | null>(null);
+  const visibleError = state !== dismissedState ? state.error : undefined;
+
+  // Discard unsaved work when the admin cancels out of the dialog without submitting:
+  // create mode goes back to "no type chosen", edit mode reverts to the saved
+  // `props.data` so reopening never shows (or re-submits) cancelled edits. The success
+  // path above handles the submit case — this `onOpenChange` callback only fires for
+  // user/library-driven closes such as Escape, outside-press, or a `Dialog.Close`, never
+  // for our own `setOpen(false)` in the effects above, so the two paths are
+  // complementary, not overlapping.
   function handleOpenChange(next: boolean) {
     setOpen(next);
-    if (!next && props.mode === "create") {
+    if (next) return;
+    setDismissedState(state);
+    if (props.mode === "create") {
       setType(null);
       setData(EMPTY_DATA.HERO);
+    } else {
+      setData(props.data);
     }
   }
 
@@ -144,7 +156,7 @@ export function ContentBlockFormDialog(props: Props) {
             {type === "CARD_GRID" ? <CardGridFields value={data as CardGridBlockData} onChange={setData} /> : null}
             {type === "CTA_BAND" ? <CtaBandFields value={data as CtaBandBlockData} onChange={setData} /> : null}
 
-            {state.error ? <p className="text-sm text-destructive">{state.error}</p> : null}
+            {visibleError ? <p className="text-sm text-destructive">{visibleError}</p> : null}
             <DialogFooter>
               <Button type="submit" disabled={pending}>
                 {pending ? "Saving…" : props.mode === "create" ? "Add" : "Save"}

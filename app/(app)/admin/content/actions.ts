@@ -49,12 +49,18 @@ export async function createContentBlock(
   const parsed = parseBlockInput(formData);
   if (!parsed.ok) return { error: parsed.error };
 
-  const count = await prisma.contentBlock.count({ where: { page } });
+  // max+1, not count(): deletes leave gaps, so count() can hand a new block the same
+  // sortOrder as a surviving sibling, and a tie turns Move up/down into a no-op swap.
+  const maxRow = await prisma.contentBlock.findFirst({
+    where: { page },
+    orderBy: { sortOrder: "desc" },
+    select: { sortOrder: true },
+  });
   const block = await prisma.contentBlock.create({
     data: {
       page,
       type: parsed.value.type,
-      sortOrder: count,
+      sortOrder: (maxRow?.sortOrder ?? -1) + 1,
       data: parsed.value.data,
       updatedById: admin.id,
     },
@@ -150,7 +156,9 @@ export async function moveContentBlock(id: string, direction: "up" | "down"): Pr
 
   const siblings = await prisma.contentBlock.findMany({
     where: { page: existing.page },
-    orderBy: { sortOrder: "asc" },
+    // Same ordering (including the id tie-breaker) as getPageBlocks, so the index found
+    // here matches the position the admin actually sees in the list.
+    orderBy: [{ sortOrder: "asc" }, { id: "asc" }],
   });
   const index = siblings.findIndex((s) => s.id === id);
   const swapIndex = direction === "up" ? index - 1 : index + 1;
