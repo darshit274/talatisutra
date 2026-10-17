@@ -35,6 +35,16 @@ enum ContentBlockType {
   TEXT
   CARD_GRID
   CTA_BAND
+  SLIDER
+}
+
+enum ArticleCategory {
+  GR_CIRCULARS
+  LAND_RECORDS
+  PANCHAYAT_ADMINISTRATION
+  EXAM_PREPARATION
+  SALARY_SERVICE_RULES
+  FORMS_DOWNLOADS
 }
 
 model Department {
@@ -66,6 +76,7 @@ model User {
   emailOtps            EmailOtp[]
   uploads              Material[]           @relation("UploadedBy")
   updatedContentBlocks ContentBlock[]       @relation("ContentBlockUpdatedBy")
+  updatedArticles      Article[]            @relation("ArticleUpdatedBy")
   createdAt            DateTime             @default(now())
   updatedAt            DateTime             @updatedAt
 
@@ -192,9 +203,32 @@ model ContactEnquiry {
   name      String
   email     String
   phone     String?
+  district  String?
   subject   String?
   message   String   @db.Text
   isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Article {
+  id          String          @id @default(cuid())
+  category    ArticleCategory
+  title       String
+  excerpt     String
+  body        String          @db.Text
+  pdfKey      String?
+  pdfLabel    String?
+  publishedAt DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  updatedById String?
+  updatedBy   User?           @relation("ArticleUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([category, publishedAt])
+}
+
+model NewsletterSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
   createdAt DateTime @default(now())
 }
 
