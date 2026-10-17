@@ -16,7 +16,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "cn";
 import { createContentBlock, updateContentBlock, type ContentBlockFormState } from "./actions";
 import { BLOCK_TYPE_LABEL } from "@/lib/validation/content";
-import { HeroFields, TextFields, CardGridFields, CtaBandFields } from "./block-type-fields";
+import { HeroFields, TextFields, CardGridFields, CtaBandFields, SliderFields } from "./block-type-fields";
 import type {
   HeroBlockData,
   TextBlockData,
@@ -157,6 +157,7 @@ export function ContentBlockFormDialog(props: Props) {
             {type === "TEXT" ? <TextFields value={data as TextBlockData} onChange={setData} /> : null}
             {type === "CARD_GRID" ? <CardGridFields value={data as CardGridBlockData} onChange={setData} /> : null}
             {type === "CTA_BAND" ? <CtaBandFields value={data as CtaBandBlockData} onChange={setData} /> : null}
+            {type === "SLIDER" ? <SliderFields value={data as SliderBlockData} onChange={setData} /> : null}
 
             {visibleError ? <p className="text-sm text-destructive">{visibleError}</p> : null}
             <DialogFooter>

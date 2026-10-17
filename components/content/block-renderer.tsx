@@ -23,6 +23,11 @@ export function BlockRenderer({ blocks }: { blocks: ContentBlock[] }) {
             return <CardGridBlock key={block.id} data={block.data as CardGridBlockData} />;
           case "CTA_BAND":
             return <CtaBandBlock key={block.id} data={block.data as CtaBandBlockData} />;
+          case "SLIDER":
+            // SLIDER is never rendered through this component — it needs server-fetched
+            // Article enrichment BlockRenderer doesn't have (Task 15 renders it directly).
+            // This branch exists only as a defensive no-op if one ever reaches here.
+            return null;
           default:
             return null;
         }

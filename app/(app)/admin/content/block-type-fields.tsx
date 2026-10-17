@@ -6,11 +6,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Plus, X } from "lucide-react";
 import { SiteImageUploadField } from "./site-image-upload-field";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CATEGORY_META, CATEGORY_ORDER } from "@/lib/articles/categories";
 import type {
   HeroBlockData,
   TextBlockData,
   CardGridBlockData,
   CtaBandBlockData,
+  SliderBlockData,
 } from "@/lib/validation/content";
 
 export function HeroFields({ value, onChange }: { value: HeroBlockData; onChange: (v: HeroBlockData) => void }) {
@@ -108,6 +111,61 @@ export function CardGridFields({ value, onChange }: { value: CardGridBlockData; 
           </Button>
         ) : null}
       </div>
+    </div>
+  );
+}
+
+export function SliderFields({ value, onChange }: { value: SliderBlockData; onChange: (v: SliderBlockData) => void }) {
+  function updateSlide(i: number, patch: Partial<SliderBlockData["slides"][number]>) {
+    onChange({ ...value, slides: value.slides.map((s, idx) => (idx === i ? { ...s, ...patch } : s)) });
+  }
+
+  return (
+    <div className="space-y-3">
+      <Label>Slides</Label>
+      {value.slides.map((slide, i) => (
+        <div key={i} className="space-y-2 rounded-lg border p-3">
+          <Input placeholder="Kicker" value={slide.kicker} onChange={(e) => updateSlide(i, { kicker: e.target.value })} />
+          <Input placeholder="Title" value={slide.title} onChange={(e) => updateSlide(i, { title: e.target.value })} />
+          <Textarea placeholder="Subtext" rows={2} value={slide.subtext} onChange={(e) => updateSlide(i, { subtext: e.target.value })} />
+          <Input placeholder="CTA label" value={slide.ctaLabel} onChange={(e) => updateSlide(i, { ctaLabel: e.target.value })} />
+          <Select value={slide.category} onValueChange={(v) => updateSlide(i, { category: v as SliderBlockData["slides"][number]["category"] })}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Choose a category" />
+            </SelectTrigger>
+            <SelectContent>
+              {CATEGORY_ORDER.map((c) => (
+                <SelectItem key={c} value={c}>
+                  {CATEGORY_META[c].label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button type="button" variant="ghost" size="sm" onClick={() => onChange({ ...value, slides: value.slides.filter((_, idx) => idx !== i) })}>
+            <X className="size-4" aria-hidden="true" />
+            Remove slide
+          </Button>
+        </div>
+      ))}
+      {value.slides.length < 5 ? (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() =>
+            onChange({
+              ...value,
+              slides: [
+                ...value.slides,
+                { kicker: "", title: "", subtext: "", ctaLabel: "", category: CATEGORY_ORDER[0] },
+              ],
+            })
+          }
+        >
+          <Plus className="size-4" aria-hidden="true" />
+          Add slide
+        </Button>
+      ) : null}
     </div>
   );
 }
