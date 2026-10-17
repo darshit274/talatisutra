@@ -37,7 +37,9 @@ export const metadata: Metadata = {
     template: "%s | TalatiSutra",
   },
   description: "Placeholder description — replace with client copy (BUILD-PLAN §14).",
-  // The site is internal (CLAUDE.md rule 8): never indexed, regardless of page.
+  // Default is noindex (CLAUDE.md rule 9) — (app)/(auth) inherit this unchanged.
+  // (marketing) pages override it individually to { index: true, follow: true },
+  // the scoped carve-out rule 9 now documents.
   robots: { index: false, follow: false },
 };
 

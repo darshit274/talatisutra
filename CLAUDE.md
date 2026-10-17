@@ -57,9 +57,13 @@ starting any phase.
    (`departmentId: null`, never settable from the registration form) and so only
    ever see `visibility: "ALL"` materials — there is no path to self-assign a
    department.
-9. **The site is internal.** Root metadata sets `robots: { index: false, follow: false }`
-   and `robots.txt` disallows everything. Do not add sitemaps, structured data, or any
-   other SEO work.
+9. **The authenticated app is internal; the public marketing site is indexable.** Root
+   metadata defaults to `robots: { index: false, follow: false }`, which `(app)` (portal,
+   admin) and `(auth)` inherit unchanged. `(marketing)`'s own pages (Home, About,
+   Services, Articles, Contact, Privacy, Disclaimer) override this per-page to
+   `{ index: true, follow: true }` — a scoped carve-out, not a blanket repeal.
+   `robots.txt` allows those public paths and disallows everything else. Do not add a
+   sitemap, structured data, or any other SEO work beyond this carve-out.
 10. **Passwords**: bcrypt, cost 12. Never log them, never return a hash from an API.
 11. **Secrets live in `.env`**, which is gitignored. Commit `.env.example` instead.
 

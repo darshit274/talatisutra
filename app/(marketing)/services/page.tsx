@@ -4,6 +4,7 @@ import { BlockRenderer } from "@/components/content/block-renderer";
 
 export const metadata: Metadata = {
   title: "Services",
+  robots: { index: true, follow: true },
 };
 
 export default async function ServicesPage() {

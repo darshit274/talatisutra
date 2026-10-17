@@ -5,6 +5,7 @@ import { ContactForm } from "./contact-form";
 
 export const metadata: Metadata = {
   title: "Contact",
+  robots: { index: true, follow: true },
 };
 
 export default async function ContactPage() {
