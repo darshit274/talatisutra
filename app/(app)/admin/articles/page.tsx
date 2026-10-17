@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ArticleCategory } from "@prisma/client";
+import { requireAdmin } from "@/lib/auth/session";
 import { getArticles } from "@/lib/queries/articles";
 import { CATEGORY_META, CATEGORY_ORDER } from "@/lib/articles/categories";
 import { deleteArticle } from "./actions";
@@ -30,6 +31,7 @@ export default async function AdminArticlesPage({
 }: {
   searchParams: Promise<{ category?: string }>;
 }) {
+  await requireAdmin("/admin/articles");
   const { category: rawCategory } = await searchParams;
   const category = isArticleCategory(rawCategory) ? rawCategory : undefined;
   const articles = await getArticles(category);
