@@ -22,15 +22,17 @@ import type {
   TextBlockData,
   CardGridBlockData,
   CtaBandBlockData,
+  SliderBlockData,
 } from "@/lib/validation/content";
 
-type BlockData = HeroBlockData | TextBlockData | CardGridBlockData | CtaBandBlockData;
+type BlockData = HeroBlockData | TextBlockData | CardGridBlockData | CtaBandBlockData | SliderBlockData;
 
 const EMPTY_DATA: Record<ContentBlockType, BlockData> = {
   HERO: { heading: "", subtext: "", buttons: [], imageKey: null },
   TEXT: { heading: null, body: "" },
   CARD_GRID: { heading: null, subtext: null, cards: [] },
   CTA_BAND: { heading: "", subtext: "", button: { label: "", href: "" } },
+  SLIDER: { slides: [] },
 };
 
 type Props =

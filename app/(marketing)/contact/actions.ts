@@ -22,6 +22,7 @@ export async function submitContactForm(
     name: formData.get("name"),
     email: formData.get("email"),
     phone: formData.get("phone"),
+    district: formData.get("district"),
     subject: formData.get("subject"),
     message: formData.get("message"),
     website: formData.get("website"),
@@ -57,7 +58,7 @@ export async function submitContactForm(
     data: { name, email, phone: phone || null, subject: subject || null, message },
   });
 
-  await sendContactEnquiryEmail({ name, email, phone, subject, message });
+  await sendContactEnquiryEmail({ name, email, phone, subject: subject ?? undefined, message });
 
   return { submitted: true };
 }

@@ -4,7 +4,8 @@ export const contactSchema = z.object({
   name: z.string().trim().min(1, "Name is required.").max(200),
   email: z.string().trim().email("Enter a valid email address."),
   phone: z.string().trim().max(50).optional().or(z.literal("")),
-  subject: z.string().trim().max(200).optional().or(z.literal("")),
+  district: z.string().trim().max(100).nullable(),
+  subject: z.enum(["Missing document", "Procedure question", "Exam material", "Other"]).nullable(),
   message: z.string().trim().min(1, "Message is required.").max(5000),
   // Honeypot — a real visitor never sees or fills this field (the form hides it
   // off-screen, see contact-form.tsx). Any non-empty value here means a bot filled

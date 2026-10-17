@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ArticleCategory } from "@prisma/client";
 import type { ContentBlockType } from "@prisma/client";
 // Imported from the dependency-free ./filename module rather than ./storage, because this
 // file is also imported by client components and storage.ts pulls in node:fs and
@@ -49,11 +50,24 @@ export const ctaBandBlockDataSchema = z.object({
 });
 export type CtaBandBlockData = z.infer<typeof ctaBandBlockDataSchema>;
 
+const sliderSlideSchema = z.object({
+  kicker: z.string().trim().min(1).max(60),
+  title: z.string().trim().min(1).max(200),
+  subtext: z.string().trim().max(500),
+  ctaLabel: z.string().trim().min(1).max(60),
+  category: z.nativeEnum(ArticleCategory),
+});
+export const sliderBlockDataSchema = z.object({
+  slides: z.array(sliderSlideSchema).min(1).max(5),
+});
+export type SliderBlockData = z.infer<typeof sliderBlockDataSchema>;
+
 export const contentBlockInputSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("HERO"), data: heroBlockDataSchema }),
   z.object({ type: z.literal("TEXT"), data: textBlockDataSchema }),
   z.object({ type: z.literal("CARD_GRID"), data: cardGridBlockDataSchema }),
   z.object({ type: z.literal("CTA_BAND"), data: ctaBandBlockDataSchema }),
+  z.object({ type: z.literal("SLIDER"), data: sliderBlockDataSchema }),
 ]);
 export type ContentBlockInput = z.infer<typeof contentBlockInputSchema>;
 
@@ -62,6 +76,7 @@ export const BLOCK_TYPE_LABEL: Record<ContentBlockType, string> = {
   TEXT: "Text",
   CARD_GRID: "Card grid",
   CTA_BAND: "CTA band",
+  SLIDER: "Slider",
 };
 
 /** Every image key a block's data references, for orphan-cleanup diffing (Task 7) —
@@ -76,6 +91,7 @@ export function extractImageKeys(block: ContentBlockInput): string[] {
         .filter((key): key is string => key !== null);
     case "TEXT":
     case "CTA_BAND":
+    case "SLIDER":
       return [];
   }
 }
@@ -97,5 +113,7 @@ export function getBlockPreviewText(type: ContentBlockType, data: unknown): stri
       return parsed.data.data.heading ?? `${parsed.data.data.cards.length} card(s)`;
     case "TEXT":
       return parsed.data.data.heading ?? parsed.data.data.body.split("\n")[0];
+    case "SLIDER":
+      return parsed.data.data.slides[0]?.title ?? BLOCK_TYPE_LABEL.SLIDER;
   }
 }
