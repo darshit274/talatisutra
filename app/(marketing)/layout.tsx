@@ -6,7 +6,7 @@ export default async function MarketingLayout({ children }: { children: React.Re
   const user = await getCurrentUser();
 
   return (
-    <div className="flex min-h-svh flex-col">
+    <div className="theme-classical flex min-h-svh flex-col bg-background text-foreground">
       <MarketingHeader user={user} />
       <main className="flex-1">{children}</main>
       <MarketingFooter />
