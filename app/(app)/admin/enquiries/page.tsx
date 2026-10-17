@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { format } from "date-fns";
 import { prisma } from "@/lib/db/prisma";
+import { requireAdmin } from "@/lib/auth/session";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { markEnquiryRead } from "./actions";
@@ -10,6 +11,7 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminEnquiriesPage() {
+  await requireAdmin("/admin/enquiries");
   const enquiries = await prisma.contactEnquiry.findMany({ orderBy: { createdAt: "desc" } });
 
   return (

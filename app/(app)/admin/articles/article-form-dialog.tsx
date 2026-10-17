@@ -38,9 +38,7 @@ export function ArticleFormDialog(props: Props) {
   const [state, formAction, pending] = useActionState(action, initialState);
 
   // Closes the dialog once a submit succeeds (no error, no longer pending). Mirrors
-  // ContentBlockFormDialog's success-detection shape, kept to one effect here since
-  // there is nothing else to reset: create-mode's next open always comes from a fresh
-  // mount (the trigger stays rendered, this component doesn't persist across opens).
+  // ContentBlockFormDialog's success-detection shape.
   const wasPending = useRef(false);
   useEffect(() => {
     if (wasPending.current && !pending && !state.error) {
@@ -48,6 +46,23 @@ export function ArticleFormDialog(props: Props) {
     }
     wasPending.current = pending;
   }, [pending, state.error]);
+
+  // This component stays mounted next to its trigger across opens/closes (unlike
+  // ContentBlockFormDialog's create mode, which remounts fresh each time), so `pdf`
+  // must be reset explicitly on every open — otherwise a PDF attached and then
+  // cancelled (or attached while creating one article) leaks into the next open,
+  // and two articles can end up sharing one pdfKey.
+  function handleOpenChange(next: boolean) {
+    setOpen(next);
+    if (next) {
+      setPdf(
+        props.mode === "edit"
+          ? { key: props.article.pdfKey, label: props.article.pdfLabel }
+          : { key: null, label: null },
+      );
+      setPdfError(null);
+    }
+  }
 
   async function handlePdfFile(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -74,7 +89,7 @@ export function ArticleFormDialog(props: Props) {
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger
         className={cn(buttonVariants(props.mode === "create" ? { variant: "outline" } : { variant: "ghost", size: "sm" }))}
       >

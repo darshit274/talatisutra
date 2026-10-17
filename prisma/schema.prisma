@@ -125,6 +125,7 @@ enum LoginAttemptKind {
   CONTACT_FORM
   REGISTRATION
   EMAIL_OTP_VERIFY
+  NEWSLETTER_SUBSCRIBE
 }
 
 model LoginAttempt {
@@ -213,8 +214,8 @@ model ContactEnquiry {
 model Article {
   id          String          @id @default(cuid())
   category    ArticleCategory
-  title       String
-  excerpt     String
+  title       String          @db.VarChar(200)
+  excerpt     String          @db.VarChar(300)
   body        String          @db.Text
   pdfKey      String?
   pdfLabel    String?

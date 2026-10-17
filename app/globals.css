@@ -145,6 +145,14 @@
   --radius: 0.25rem; /* Classical's --radius-md: 4px */
   --font-sans: var(--font-lora);
   --font-heading-family: var(--font-cormorant);
+  /* @layer base's `html { @apply font-sans; }` below is compiled by Tailwind to the
+     literal `font-family: var(--font-geist-sans)` (confirmed in the built CSS) —
+     `@apply` resolves the theme reference chain at build time rather than preserving
+     it, so no scope's override of --font-sans ever reaches that rule, the same
+     inlining failure --font-heading hit in Task 9. A direct declaration here is not
+     subject to that resolution (it's hand-written CSS, not a Tailwind utility), and
+     overrides the inherited html-level font for every element under this scope. */
+  font-family: var(--font-lora);
 }
 
 @layer base {

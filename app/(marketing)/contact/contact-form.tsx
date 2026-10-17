@@ -68,7 +68,7 @@ export function ContactForm() {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="phone">Phone (optional)</Label>
+          <Label htmlFor="phone">Mobile number (optional)</Label>
           <Input id="phone" name="phone" type="tel" autoComplete="tel" />
         </div>
         <div className="space-y-2">

@@ -34,7 +34,7 @@ export function SliderBlock({ slides }: { slides: EnrichedSlide[] }) {
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-16 md:grid-cols-2 md:items-center">
         <div>
           <p className="text-sm font-medium text-primary">{slide.kicker}</p>
-          <h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">{slide.title}</h1>
+          <h1 className="font-heading mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">{slide.title}</h1>
           <p className="mt-4 max-w-xl text-muted-foreground">{slide.subtext}</p>
           <Link href={category.path} className={buttonVariants({ variant: "outline-accent", size: "lg", className: "mt-8" })}>
             {slide.ctaLabel}

@@ -7,6 +7,11 @@ import { subscribeToNewsletter, type NewsletterState } from "../actions";
 
 const initialState: NewsletterState = { subscribed: false };
 
+// Visually hidden, not tab-reachable, and out of the accessibility tree — a real
+// visitor never encounters this field. Same honeypot convention as the contact form.
+const HONEYPOT_CLASSES =
+  "absolute h-px w-px -m-px overflow-hidden border-0 p-0 whitespace-nowrap [clip:rect(0,0,0,0)]";
+
 export function HomeNewsletterSection() {
   const [state, formAction, pending] = useActionState(subscribeToNewsletter, initialState);
 
@@ -24,6 +29,10 @@ export function HomeNewsletterSection() {
           <p className="mt-6 text-sm font-medium">Thank you for subscribing.</p>
         ) : (
           <form action={formAction} className="mx-auto mt-6 flex max-w-sm flex-col gap-3 sm:flex-row">
+            <div className={HONEYPOT_CLASSES} aria-hidden="true">
+              <label htmlFor="newsletter-website">Website</label>
+              <input id="newsletter-website" name="website" type="text" tabIndex={-1} autoComplete="off" />
+            </div>
             <Input
               type="email"
               name="email"

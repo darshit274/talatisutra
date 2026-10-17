@@ -112,3 +112,24 @@ export async function isOtpVerifyThrottled(email: string, ip: string): Promise<b
 export async function recordOtpVerifyAttempt(email: string, ip: string, success: boolean): Promise<void> {
   await prisma.loginAttempt.create({ data: { email, ip, success, kind: "EMAIL_OTP_VERIFY" } });
 }
+
+/**
+ * Same window applied to the public newsletter signup, so it can't be scripted to
+ * flood the subscriber list with arbitrary addresses (review finding I-7).
+ */
+export async function isNewsletterSubscribeThrottled(email: string, ip: string): Promise<boolean> {
+  const since = windowStart();
+  const [byEmail, byIp] = await Promise.all([
+    prisma.loginAttempt.count({
+      where: { kind: "NEWSLETTER_SUBSCRIBE", email, createdAt: { gte: since } },
+    }),
+    prisma.loginAttempt.count({
+      where: { kind: "NEWSLETTER_SUBSCRIBE", ip, createdAt: { gte: since } },
+    }),
+  ]);
+  return byEmail >= MAX_ATTEMPTS || byIp >= MAX_ATTEMPTS;
+}
+
+export async function recordNewsletterSubscribeAttempt(email: string, ip: string): Promise<void> {
+  await prisma.loginAttempt.create({ data: { email, ip, success: true, kind: "NEWSLETTER_SUBSCRIBE" } });
+}
