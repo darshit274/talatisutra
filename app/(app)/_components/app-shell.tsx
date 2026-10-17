@@ -37,6 +37,7 @@ const ADMIN_LINKS = [
   { href: "/admin/departments", label: "Departments", icon: Building2 },
   { href: "/admin/employees", label: "Users", icon: Users },
   { href: "/admin/enquiries", label: "Enquiries", icon: Mail },
+  { href: "/admin/newsletter", label: "Newsletter", icon: Mail },
 ];
 
 function NavLink({
