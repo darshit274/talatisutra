@@ -18,6 +18,7 @@ const NAV_LINKS = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About" },
   { href: "/services", label: "Services" },
+  { href: "/articles", label: "Articles" },
   { href: "/contact", label: "Contact" },
 ];
 
@@ -26,16 +27,62 @@ const PORTAL_LINKS = [
   { href: "/profile", label: "Profile", icon: UserCircle },
 ];
 
+// A circular seal mark: two concentric accent-colored rings around a centered
+// Gujarati "ત" (spec §5 / Appendix A — ported from the mock's inline SVG).
+function Wordmark() {
+  return (
+    <svg width="42" height="42" viewBox="0 0 42 42" aria-hidden="true">
+      <circle cx="21" cy="21" r="19" fill="none" stroke="var(--primary)" strokeWidth="1.5" />
+      <circle cx="21" cy="21" r="14" fill="none" stroke="var(--primary)" strokeWidth="1" />
+      <text
+        x="21"
+        y="21"
+        textAnchor="middle"
+        dominantBaseline="central"
+        fill="var(--primary)"
+        fontSize="16"
+        fontFamily="var(--font-noto-gujarati)"
+      >
+        ત
+      </text>
+    </svg>
+  );
+}
+
 export function MarketingHeader({ user }: { user: SessionUser | null }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const closeMobile = () => setMobileOpen(false);
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background">
+      <div className="border-b bg-muted/40">
+        <div className="mx-auto flex h-9 max-w-5xl items-center justify-between gap-4 px-4 text-xs text-muted-foreground">
+          <p className="truncate">Information resource for Talati-cum-Mantri employees of Gujarat</p>
+          <div className="flex items-center gap-2" aria-hidden="true">
+            <span className="font-medium text-foreground">English</span>
+            <span>/</span>
+            <button
+              type="button"
+              className='font-["Noto_Serif_Gujarati"]'
+              title="Gujarati is a visual option only — this site does not yet translate"
+            >
+              ગુજરાતી
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-4 px-4">
-        {/* Wordmark placeholder — swap for the client's real logo (BUILD-PLAN §9/§14) */}
-        <Link href="/" className="font-semibold" onClick={closeMobile}>
-          TalatiSutra
+        <Link href="/" className="flex items-center gap-2.5" onClick={closeMobile}>
+          <Wordmark />
+          <span className="leading-tight">
+            <span className="block font-heading text-lg font-semibold">
+              Talati<span className="text-primary">sutra</span>
+            </span>
+            <span className='block font-["Noto_Serif_Gujarati"] text-xs text-muted-foreground'>
+              તલાટી સૂત્ર
+            </span>
+          </span>
         </Link>
 
         <nav className="hidden items-center gap-6 md:flex">
@@ -84,10 +131,10 @@ export function MarketingHeader({ user }: { user: SessionUser | null }) {
             </>
           ) : (
             <>
-              <Link href="/register" className={buttonVariants({ variant: "ghost" })}>
+              <Link href="/register" className={buttonVariants({ variant: "accent-ghost" })}>
                 Register
               </Link>
-              <Link href="/login" className={buttonVariants()}>
+              <Link href="/login" className={buttonVariants({ variant: "outline-accent" })}>
                 User Login
               </Link>
             </>
@@ -152,7 +199,7 @@ export function MarketingHeader({ user }: { user: SessionUser | null }) {
                 <li>
                   <Link
                     href="/register"
-                    className={buttonVariants({ variant: "ghost", className: "w-full" })}
+                    className={buttonVariants({ variant: "accent-ghost", className: "w-full" })}
                     onClick={closeMobile}
                   >
                     Register
@@ -161,7 +208,7 @@ export function MarketingHeader({ user }: { user: SessionUser | null }) {
                 <li>
                   <Link
                     href="/login"
-                    className={buttonVariants({ className: "w-full" })}
+                    className={buttonVariants({ variant: "outline-accent", className: "w-full" })}
                     onClick={closeMobile}
                   >
                     User Login
