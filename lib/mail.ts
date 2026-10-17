@@ -70,6 +70,7 @@ export interface ContactEnquiryDetails {
   name: string;
   email: string;
   phone?: string;
+  district?: string;
   subject?: string;
   message: string;
 }
@@ -79,6 +80,7 @@ export async function sendContactEnquiryEmail(enquiry: ContactEnquiryDetails): P
     ["Name", enquiry.name],
     ["Email", enquiry.email],
     ["Phone", enquiry.phone || "—"],
+    ["District", enquiry.district || "—"],
     ["Subject", enquiry.subject || "—"],
   ]
     .map(

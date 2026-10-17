@@ -5,9 +5,25 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { cn } from "cn";
 import { submitContactForm, type ContactState } from "./actions";
 
 const initialState: ContactState = { submitted: false };
+
+const DISTRICTS = [
+  "Ahmedabad",
+  "Banaskantha",
+  "Bhavnagar",
+  "Kutch",
+  "Mehsana",
+  "Rajkot",
+  "Surat",
+  "Vadodara",
+  "Other",
+];
+
+const SUBJECTS = ["Missing document", "Procedure question", "Exam material", "Other"] as const;
 
 // Visually hidden, not tab-reachable, and out of the accessibility tree — a real
 // visitor (including one using a screen reader) never encounters this field. Zero
@@ -56,8 +72,43 @@ export function ContactForm() {
           <Input id="phone" name="phone" type="tel" autoComplete="tel" />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="subject">Subject (optional)</Label>
-          <Input id="subject" name="subject" />
+          <Label htmlFor="district-trigger">District (optional)</Label>
+          <Select name="district">
+            <SelectTrigger id="district-trigger" className="w-full">
+              <SelectValue placeholder="Choose a district" />
+            </SelectTrigger>
+            <SelectContent>
+              {DISTRICTS.map((d) => (
+                <SelectItem key={d} value={d}>
+                  {d}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label>Subject</Label>
+        <div className="flex flex-wrap rounded-lg border" role="radiogroup" aria-label="Subject">
+          {SUBJECTS.map((subject, i) => (
+            <label
+              key={subject}
+              className={cn(
+                "flex-1 cursor-pointer px-3 py-2 text-center text-sm whitespace-nowrap transition-colors has-checked:bg-primary/10 has-checked:text-primary has-checked:font-medium",
+                i > 0 && "border-l",
+              )}
+            >
+              <input
+                type="radio"
+                name="subject"
+                value={subject}
+                defaultChecked={i === 0}
+                className="sr-only"
+              />
+              {subject}
+            </label>
+          ))}
         </div>
       </div>
 

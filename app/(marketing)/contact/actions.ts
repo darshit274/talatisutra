@@ -35,7 +35,7 @@ export async function submitContactForm(
     };
   }
 
-  const { name, email, phone, subject, message, website } = parsed.data;
+  const { name, email, phone, district, subject, message, website } = parsed.data;
 
   // Honeypot tripped — pretend success so the bot doesn't learn it was caught, but
   // don't save the row or send mail.
@@ -55,10 +55,17 @@ export async function submitContactForm(
   // Save first — a broken SMTP config must not lose the enquiry (BUILD-PLAN §8, §12
   // manual test item 12).
   await prisma.contactEnquiry.create({
-    data: { name, email, phone: phone || null, subject: subject || null, message },
+    data: { name, email, phone: phone || null, district, subject, message },
   });
 
-  await sendContactEnquiryEmail({ name, email, phone, subject: subject ?? undefined, message });
+  await sendContactEnquiryEmail({
+    name,
+    email,
+    phone,
+    district: district ?? undefined,
+    subject: subject ?? undefined,
+    message,
+  });
 
   return { submitted: true };
 }

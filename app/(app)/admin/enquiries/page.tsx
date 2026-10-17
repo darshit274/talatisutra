@@ -38,6 +38,7 @@ export default async function AdminEnquiriesPage() {
                   <p className="text-sm text-muted-foreground">
                     {enquiry.email}
                     {enquiry.phone ? ` · ${enquiry.phone}` : ""}
+                    {enquiry.district ? ` · ${enquiry.district}` : ""}
                   </p>
                   {enquiry.subject ? (
                     <p className="mt-1 text-sm font-medium">{enquiry.subject}</p>
