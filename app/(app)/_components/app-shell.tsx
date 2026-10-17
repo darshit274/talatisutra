@@ -15,6 +15,7 @@ import {
   Menu,
   X,
   LayoutTemplate,
+  FileText,
 } from "lucide-react";
 import { cn } from "cn";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ const ADMIN_LINKS = [
   { href: "/admin/materials", label: "Materials", icon: FolderOpen },
   { href: "/admin/categories", label: "Categories", icon: Tags },
   { href: "/admin/content", label: "Site Content", icon: LayoutTemplate },
+  { href: "/admin/articles", label: "Articles", icon: FileText },
   { href: "/admin/departments", label: "Departments", icon: Building2 },
   { href: "/admin/employees", label: "Users", icon: Users },
   { href: "/admin/enquiries", label: "Enquiries", icon: Mail },
