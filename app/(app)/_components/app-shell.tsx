@@ -16,6 +16,7 @@ import {
   X,
   LayoutTemplate,
   FileText,
+  Settings,
 } from "lucide-react";
 import { cn } from "cn";
 import { Button } from "@/components/ui/button";
@@ -38,6 +39,7 @@ const ADMIN_LINKS = [
   { href: "/admin/employees", label: "Users", icon: Users },
   { href: "/admin/enquiries", label: "Enquiries", icon: Mail },
   { href: "/admin/newsletter", label: "Newsletter", icon: Mail },
+  { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
 function NavLink({
