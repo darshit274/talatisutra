@@ -56,15 +56,23 @@ DROP INDEX `Article_category_publishedAt_idx` ON `article`;
 ALTER TABLE `article` DROP COLUMN `category`;
 CREATE INDEX `Article_categoryId_publishedAt_idx` ON `article`(`categoryId`, `publishedAt`);
 
--- 6. The HOME page's seeded SLIDER block stores its own category reference
--- inside a JSON blob with no foreign key — rewrite its 3 slides' raw enum
--- strings to the matching new slugs, or the homepage slider would point at
--- categories that no longer resolve.
+-- 6. Every SLIDER ContentBlock stores its own category reference inside a
+-- JSON blob with no foreign key — rewrite any slide's raw enum string to
+-- the matching new slug, or that slide would point at a category that no
+-- longer resolves. Done by value, across every SLIDER row (not just the
+-- originally-seeded HOME block by id, and not by slide position) — a
+-- position/id-targeted rewrite would silently miss, or mis-rewrite, a
+-- slider an admin has since reordered, retargeted, or recreated since the
+-- HOME slider shipped (confirmed live-editable since it was built).
 UPDATE `contentblock`
-SET `data` = JSON_SET(
-    `data`,
-    '$.slides[0].category', 'gr-circulars',
-    '$.slides[1].category', 'land-records',
-    '$.slides[2].category', 'exam-preparation'
-)
-WHERE `id` = 'content-home-slider';
+SET `data` = CAST(
+    REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
+        CAST(`data` AS CHAR),
+        '"GR_CIRCULARS"', '"gr-circulars"'),
+        '"LAND_RECORDS"', '"land-records"'),
+        '"PANCHAYAT_ADMINISTRATION"', '"panchayat-administration"'),
+        '"EXAM_PREPARATION"', '"exam-preparation"'),
+        '"SALARY_SERVICE_RULES"', '"salary-service-rules"'),
+        '"FORMS_DOWNLOADS"', '"forms-downloads"')
+    AS JSON)
+WHERE `type` = 'SLIDER';

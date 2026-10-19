@@ -3,8 +3,12 @@ import { prisma } from "@/lib/db/prisma";
 import type { ArticleCategory } from "@prisma/client";
 import { sliderBlockDataSchema } from "@/lib/validation/content";
 
+// `id` is a stable tie-breaker so rows that share a sortOrder (possible after
+// a delete + create cycle — see the max+1 fix in article-categories/actions.ts)
+// still render in a deterministic order across requests, same convention as
+// getPageBlocks.
 export const getArticleCategories = cache(async (): Promise<ArticleCategory[]> => {
-  return prisma.articleCategory.findMany({ orderBy: { sortOrder: "asc" } });
+  return prisma.articleCategory.findMany({ orderBy: [{ sortOrder: "asc" }, { id: "asc" }] });
 });
 
 // A category can be referenced two ways with no shared enforcement: an

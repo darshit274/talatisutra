@@ -10,6 +10,8 @@ import { getClientIp } from "@/lib/auth/ip";
 import { articleCategorySchema } from "@/lib/validation/article-categories";
 import { getArticleCategories, isCategoryDeletable } from "@/lib/queries/article-categories";
 import { DEFAULT_ICON_KEY } from "@/lib/articles/icons";
+import { sliderBlockDataSchema } from "@/lib/validation/content";
+import type { Prisma } from "@prisma/client";
 
 export interface CategoryFormState {
   error?: string;
@@ -27,6 +29,36 @@ function parseCategoryInput(formData: FormData) {
     servicesDescription: formData.get("servicesDescription"),
     tags,
   });
+}
+
+// The HOME page's SLIDER block stores each slide's category as a slug
+// inside a JSON blob with no foreign key — renaming a category's slug would
+// otherwise leave any slide that referenced the old slug pointing at
+// nothing (the same dangling-reference class the delete guard exists to
+// prevent, just triggered by a rename instead of a delete). Returns the
+// Prisma update operations needed to retarget every affected slide from
+// oldSlug to newSlug, to be run in the same transaction as the category
+// update itself.
+async function buildSliderSlugRewriteOps(oldSlug: string, newSlug: string) {
+  if (oldSlug === newSlug) return [];
+
+  const sliderBlocks = await prisma.contentBlock.findMany({ where: { type: "SLIDER" } });
+  const ops: Prisma.PrismaPromise<unknown>[] = [];
+
+  for (const block of sliderBlocks) {
+    const parsed = sliderBlockDataSchema.safeParse(block.data);
+    if (!parsed.success) continue;
+    if (!parsed.data.slides.some((slide) => slide.category === oldSlug)) continue;
+
+    const data = {
+      slides: parsed.data.slides.map((slide) =>
+        slide.category === oldSlug ? { ...slide, category: newSlug } : slide,
+      ),
+    };
+    ops.push(prisma.contentBlock.update({ where: { id: block.id }, data: { data } }));
+  }
+
+  return ops;
 }
 
 function revalidateArticleCategoryPaths() {
@@ -57,9 +89,16 @@ export async function createArticleCategory(
     };
   }
 
-  const count = await prisma.articleCategory.count();
+  // max+1, not count(): deletes leave gaps, so count() can hand a new
+  // category the same sortOrder as a surviving sibling, turning Move up/down
+  // into a no-op swap for that tied pair (same bug class already fixed for
+  // ContentBlock — see app/(app)/admin/content/actions.ts).
+  const maxRow = await prisma.articleCategory.findFirst({
+    orderBy: { sortOrder: "desc" },
+    select: { sortOrder: true },
+  });
   const category = await prisma.articleCategory.create({
-    data: { ...parsed.data, icon: DEFAULT_ICON_KEY, sortOrder: count },
+    data: { ...parsed.data, icon: DEFAULT_ICON_KEY, sortOrder: (maxRow?.sortOrder ?? -1) + 1 },
   });
 
   await writeAuditLog({
@@ -81,6 +120,11 @@ export async function updateArticleCategory(
   formData: FormData,
 ): Promise<CategoryFormState> {
   const admin = await requireAdmin("/admin/article-categories");
+  const current = await prisma.articleCategory.findUnique({ where: { id } });
+  if (!current) {
+    return { error: "This category no longer exists." };
+  }
+
   const parsed = parseCategoryInput(formData);
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Check the form and try again." };
@@ -106,17 +150,18 @@ export async function updateArticleCategory(
     };
   }
 
-  await prisma.articleCategory.update({
-    where: { id },
-    data: parsed.data,
-  });
+  const sliderRewriteOps = await buildSliderSlugRewriteOps(current.slug, parsed.data.slug);
+  await prisma.$transaction([
+    prisma.articleCategory.update({ where: { id }, data: parsed.data }),
+    ...sliderRewriteOps,
+  ]);
 
   await writeAuditLog({
     actor: admin,
     action: "article-category.update",
     entity: "ArticleCategory",
     entityId: id,
-    meta: { name: parsed.data.name, slug: parsed.data.slug },
+    meta: { name: parsed.data.name, slug: parsed.data.slug, slidesRewritten: sliderRewriteOps.length },
     ip: getClientIp(await headers()),
   });
 
