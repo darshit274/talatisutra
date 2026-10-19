@@ -86,10 +86,18 @@ export async function updateArticleCategory(
     return { error: parsed.error.issues[0]?.message ?? "Check the form and try again." };
   }
 
+  // `id: { not: id }` excludes the row being edited at the query level —
+  // checking `existing.id !== id` only *after* the fact was a real bug
+  // (found during Task 15's verification pass): when the admin changes only
+  // the name and leaves slug untouched, findFirst's OR could match the row
+  // being edited itself via its own unchanged slug instead of the actual
+  // colliding row via name, since OR with no ordering doesn't guarantee
+  // which match comes back — silently skipping the check and letting a raw
+  // unique-constraint error crash the page instead of a clean form error.
   const existing = await prisma.articleCategory.findFirst({
-    where: { OR: [{ name: parsed.data.name }, { slug: parsed.data.slug }] },
+    where: { id: { not: id }, OR: [{ name: parsed.data.name }, { slug: parsed.data.slug }] },
   });
-  if (existing && existing.id !== id) {
+  if (existing) {
     return {
       error:
         existing.name === parsed.data.name
