@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Download } from "lucide-react";
 import { getArticleById, getArticleCategoryCounts, getLatestArticles } from "@/lib/queries/articles";
-import { CATEGORY_META } from "@/lib/articles/categories";
+import { getArticleCategories } from "@/lib/queries/article-categories";
 import { ArticleSidebar } from "../_components/article-sidebar";
 
 export async function generateMetadata({
@@ -28,20 +28,23 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
     notFound();
   }
 
-  const [counts, latest] = await Promise.all([getArticleCategoryCounts(), getLatestArticles(5)]);
-  const meta = CATEGORY_META[article.category];
+  const [counts, latest, categories] = await Promise.all([
+    getArticleCategoryCounts(),
+    getLatestArticles(5),
+    getArticleCategories(),
+  ]);
   const paragraphs = article.body.split("\n\n").filter((p) => p.trim().length > 0);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-16">
-      <Link href={meta.path} className="text-sm text-primary hover:underline">
-        ← Back to {meta.label}
+      <Link href={`/articles?category=${article.category.slug}`} className="text-sm text-primary hover:underline">
+        ← Back to {article.category.name}
       </Link>
 
       <div className="mt-10 grid gap-10 md:grid-cols-[2fr_1fr]">
         <article>
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
-            <span>{meta.label}</span>
+            <span>{article.category.name}</span>
             <span>·</span>
             <span>
               {article.publishedAt.toLocaleDateString("en-GB", {
@@ -83,7 +86,7 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
           ) : null}
         </article>
 
-        <ArticleSidebar counts={counts} latest={latest} activeCategory={article.category} />
+        <ArticleSidebar counts={counts} latest={latest} categories={categories} activeCategory={article.category.slug} />
       </div>
     </div>
   );

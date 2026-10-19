@@ -1,10 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { z } from "zod";
-import { ArticleCategory } from "@prisma/client";
 import { cn } from "cn";
 import { getArticles, getArticleCategoryCounts, getLatestArticles } from "@/lib/queries/articles";
-import { CATEGORY_META, CATEGORY_ORDER } from "@/lib/articles/categories";
+import { getArticleCategories } from "@/lib/queries/article-categories";
 import { getPageBlocks } from "@/lib/queries/content";
 import type { TextBlockData } from "@/lib/validation/content";
 import { ArticleSidebar } from "./_components/article-sidebar";
@@ -15,19 +13,21 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
-const categoryParamSchema = z.nativeEnum(ArticleCategory).optional();
-
 export default async function ArticlesPage({
   searchParams,
 }: {
   searchParams: Promise<{ category?: string }>;
 }) {
   const { category: rawCategory } = await searchParams;
-  const parsed = categoryParamSchema.safeParse(rawCategory || undefined);
-  const category = parsed.success ? parsed.data : undefined;
+  const categories = await getArticleCategories();
+  // An unrecognized or stale ?category= value (an old enum-style value, or
+  // any slug that doesn't match a current row) simply finds nothing here —
+  // categoryId stays undefined, i.e. "show all", never a crash.
+  const matched = categories.find((c) => c.slug === rawCategory);
+  const categoryId = matched?.id;
 
   const [articles, counts, latest, blocks] = await Promise.all([
-    getArticles(category),
+    getArticles(categoryId),
     getArticleCategoryCounts(),
     getLatestArticles(5),
     getPageBlocks("ARTICLES"),
@@ -51,21 +51,21 @@ export default async function ArticlesPage({
           href="/articles"
           className={cn(
             "rounded-full border px-3 py-1 text-sm",
-            category === undefined ? "border-primary text-primary" : "text-muted-foreground hover:bg-muted/40",
+            matched === undefined ? "border-primary text-primary" : "text-muted-foreground hover:bg-muted/40",
           )}
         >
           All ({total})
         </Link>
-        {CATEGORY_ORDER.map((c) => (
+        {categories.map((c) => (
           <Link
-            key={c}
-            href={`/articles?category=${c}`}
+            key={c.id}
+            href={`/articles?category=${c.slug}`}
             className={cn(
               "rounded-full border px-3 py-1 text-sm",
-              category === c ? "border-primary text-primary" : "text-muted-foreground hover:bg-muted/40",
+              matched?.slug === c.slug ? "border-primary text-primary" : "text-muted-foreground hover:bg-muted/40",
             )}
           >
-            {CATEGORY_META[c].label} ({counts[c]})
+            {c.name} ({counts[c.slug]})
           </Link>
         ))}
       </div>
@@ -86,7 +86,7 @@ export default async function ArticlesPage({
                     })}
                   </span>
                   <span>·</span>
-                  <span>{CATEGORY_META[article.category].label}</span>
+                  <span>{article.category.name}</span>
                 </div>
                 <Link href={`/articles/${article.id}`} className="mt-1 block">
                   <h2 className="font-heading text-xl font-medium hover:underline">{article.title}</h2>
@@ -100,7 +100,7 @@ export default async function ArticlesPage({
           )}
         </div>
 
-        <ArticleSidebar counts={counts} latest={latest} activeCategory={category} />
+        <ArticleSidebar counts={counts} latest={latest} categories={categories} activeCategory={matched?.slug} />
       </div>
     </div>
   );

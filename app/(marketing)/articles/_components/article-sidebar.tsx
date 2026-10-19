@@ -1,15 +1,16 @@
 import Link from "next/link";
 import type { Article, ArticleCategory } from "@prisma/client";
-import { CATEGORY_META, CATEGORY_ORDER } from "@/lib/articles/categories";
 
 export function ArticleSidebar({
   counts,
   latest,
+  categories,
   activeCategory,
 }: {
-  counts: Record<ArticleCategory, number>;
+  counts: Record<string, number>;
   latest: Article[];
-  activeCategory?: ArticleCategory;
+  categories: ArticleCategory[];
+  activeCategory?: string;
 }) {
   return (
     <aside className="space-y-8">
@@ -25,17 +26,17 @@ export function ArticleSidebar({
           >
             All
           </Link>
-          {CATEGORY_ORDER.map((category) => (
+          {categories.map((category) => (
             <Link
-              key={category}
-              href={`/articles?category=${category}`}
+              key={category.id}
+              href={`/articles?category=${category.slug}`}
               className={
                 "flex items-center justify-between text-sm hover:underline " +
-                (activeCategory === category ? "font-medium text-primary" : "text-muted-foreground")
+                (activeCategory === category.slug ? "font-medium text-primary" : "text-muted-foreground")
               }
             >
-              <span>{CATEGORY_META[category].label}</span>
-              <span className="tabular-nums">{counts[category]}</span>
+              <span>{category.name}</span>
+              <span className="tabular-nums">{counts[category.slug]}</span>
             </Link>
           ))}
         </nav>
