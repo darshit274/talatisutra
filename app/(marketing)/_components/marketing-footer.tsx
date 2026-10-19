@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CATEGORY_META, CATEGORY_ORDER } from "@/lib/articles/categories";
+import { getSiteSettings } from "@/lib/queries/site-settings";
 
 const NAV_LINKS = [
   { href: "/", label: "Home" },
@@ -9,8 +10,9 @@ const NAV_LINKS = [
   { href: "/contact", label: "Contact" },
 ];
 
-export function MarketingFooter() {
+export async function MarketingFooter() {
   const year = new Date().getFullYear();
+  const settings = await getSiteSettings();
 
   return (
     <footer className="border-t">
@@ -59,11 +61,11 @@ export function MarketingFooter() {
         <div>
           <p className="text-sm font-medium">Contact</p>
           <p className="mt-3 text-sm text-muted-foreground">
-            help@talatisutra.in
+            {settings.contactEmail}
             <br />
-            +91 98250 00000
+            {settings.contactPhone}
             <br />
-            Gandhinagar, Gujarat
+            {settings.contactAddress}
           </p>
         </div>
       </div>
