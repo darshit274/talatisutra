@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { ArticleCategory } from "@prisma/client";
 import type { ContentBlockType } from "@prisma/client";
 // Imported from the dependency-free ./filename module rather than ./storage, because this
 // file is also imported by client components and storage.ts pulls in node:fs and
@@ -55,7 +54,11 @@ const sliderSlideSchema = z.object({
   title: z.string().trim().min(1).max(200),
   subtext: z.string().trim().max(500),
   ctaLabel: z.string().trim().min(1).max(60),
-  category: z.nativeEnum(ArticleCategory),
+  // A category slug, not validated against the live category list here —
+  // this schema has no database access. Existence is checked where the
+  // value is actually used (Task 11's admin editor, Task 12's homepage
+  // render).
+  category: z.string().trim().min(1),
 });
 export const sliderBlockDataSchema = z.object({
   slides: z.array(sliderSlideSchema).min(1).max(5),

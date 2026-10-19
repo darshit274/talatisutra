@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { ArticleCategory } from "@prisma/client";
 import { SITE_DOCUMENT_FILENAME_PATTERN } from "@/lib/site-documents/storage";
 
 // A pdfKey flows into deleteSiteDocument() -> path.join(STORAGE_DIR, "site-documents", key)
@@ -9,7 +8,7 @@ import { SITE_DOCUMENT_FILENAME_PATTERN } from "@/lib/site-documents/storage";
 const pdfKeySchema = z.string().regex(SITE_DOCUMENT_FILENAME_PATTERN, "Invalid PDF key.").nullable();
 
 export const articleInputSchema = z.object({
-  category: z.nativeEnum(ArticleCategory),
+  categoryId: z.string().min(1, "Choose a category."),
   title: z.string().trim().min(1, "Title is required.").max(200),
   excerpt: z.string().trim().min(1, "Excerpt is required.").max(300),
   body: z.string().trim().min(1, "Body is required.").max(20000),
