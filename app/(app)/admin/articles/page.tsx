@@ -5,18 +5,10 @@ import { getArticles } from "@/lib/queries/articles";
 import { CATEGORY_META, CATEGORY_ORDER } from "@/lib/articles/categories";
 import { deleteArticle } from "./actions";
 import { ArticleFormDialog } from "./article-form-dialog";
+import { ArticleCategoryFilter } from "./article-category-filter";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { DeleteConfirmButton } from "@/components/admin/delete-confirm-button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 
 export const metadata: Metadata = {
   title: "Articles",
@@ -48,27 +40,7 @@ export default async function AdminArticlesPage({
         <ArticleFormDialog mode="create" />
       </div>
 
-      <form method="get" className="flex flex-wrap items-end gap-4 rounded-lg border p-4">
-        <div className="space-y-2">
-          <Label htmlFor="filter-category-trigger">Category</Label>
-          <Select name="category" defaultValue={category ?? ""}>
-            <SelectTrigger id="filter-category-trigger" className="w-56">
-              <SelectValue placeholder="All categories">
-                {(value: ArticleCategory | "") => (value ? CATEGORY_META[value].label : "All categories")}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">All categories</SelectItem>
-              {CATEGORY_ORDER.map((c) => (
-                <SelectItem key={c} value={c}>
-                  {CATEGORY_META[c].label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <Button type="submit">Apply</Button>
-      </form>
+      <ArticleCategoryFilter category={category} />
 
       {articles.length === 0 ? (
         <div className="rounded-lg border p-8 text-center text-sm text-muted-foreground">
