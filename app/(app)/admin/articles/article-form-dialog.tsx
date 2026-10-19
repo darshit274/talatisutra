@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useRef, useState } from "react";
 import { Plus, Pencil } from "lucide-react";
-import type { Article } from "@prisma/client";
+import type { Article, ArticleCategory } from "@prisma/client";
 import {
   Dialog,
   DialogContent,
@@ -24,7 +24,15 @@ const initialState: ArticleFormState = {};
 
 type Props = { mode: "create" } | { mode: "edit"; article: Article };
 
+// Fire-and-forget: best-effort disk cleanup for a PDF this dialog uploaded but never
+// saved (review finding M-4). The route itself refuses to delete a key any Article
+// still references, so this can never touch a live download link.
+function discardUnsavedPdf(key: string) {
+  fetch(`/api/site-documents/${key}`, { method: "DELETE" }).catch(() => {});
+}
+
 export function ArticleFormDialog(props: Props) {
+  const originalPdfKey = props.mode === "edit" ? props.article.pdfKey : null;
   const [open, setOpen] = useState(false);
   const [pdf, setPdf] = useState<{ key: string | null; label: string | null }>(
     props.mode === "edit" ? { key: props.article.pdfKey, label: props.article.pdfLabel } : { key: null, label: null },
@@ -61,6 +69,10 @@ export function ArticleFormDialog(props: Props) {
           : { key: null, label: null },
       );
       setPdfError(null);
+    } else if (pdf.key && pdf.key !== originalPdfKey) {
+      // User-driven close (cancel, Escape, outside click) while an uploaded-but-
+      // unsaved PDF is sitting there — discard it rather than leaving it orphaned.
+      discardUnsavedPdf(pdf.key);
     }
   }
 
@@ -79,6 +91,11 @@ export function ArticleFormDialog(props: Props) {
       if (!res.ok || !body.key) {
         setPdfError(body.error ?? "Upload failed. Try again.");
         return;
+      }
+      // Replacing an earlier upload from this same session (not the article's saved
+      // PDF) — discard the one being replaced.
+      if (pdf.key && pdf.key !== originalPdfKey) {
+        discardUnsavedPdf(pdf.key);
       }
       setPdf({ key: body.key, label: body.label ?? null });
     } catch {
@@ -118,7 +135,9 @@ export function ArticleFormDialog(props: Props) {
             <Label htmlFor="category-trigger">Category</Label>
             <Select name="category" defaultValue={props.mode === "edit" ? props.article.category : undefined}>
               <SelectTrigger id="category-trigger" className="w-full">
-                <SelectValue placeholder="Choose a category" />
+                <SelectValue placeholder="Choose a category">
+                  {(value: ArticleCategory) => CATEGORY_META[value].label}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {CATEGORY_ORDER.map((c) => (
@@ -162,7 +181,15 @@ export function ArticleFormDialog(props: Props) {
             {pdf.key ? (
               <div className="flex items-center gap-3">
                 <span className="text-sm text-muted-foreground">{pdf.label ?? pdf.key}</span>
-                <Button type="button" variant="outline" size="sm" onClick={() => setPdf({ key: null, label: null })}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (pdf.key && pdf.key !== originalPdfKey) discardUnsavedPdf(pdf.key);
+                    setPdf({ key: null, label: null });
+                  }}
+                >
                   Remove
                 </Button>
               </div>

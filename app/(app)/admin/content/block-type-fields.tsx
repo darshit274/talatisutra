@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Plus, X } from "lucide-react";
+import { Plus, X, ArrowUp, ArrowDown } from "lucide-react";
 import { SiteImageUploadField } from "./site-image-upload-field";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CATEGORY_META, CATEGORY_ORDER } from "@/lib/articles/categories";
@@ -120,27 +120,75 @@ export function SliderFields({ value, onChange }: { value: SliderBlockData; onCh
     onChange({ ...value, slides: value.slides.map((s, idx) => (idx === i ? { ...s, ...patch } : s)) });
   }
 
+  function moveSlide(i: number, direction: "up" | "down") {
+    const swapWith = direction === "up" ? i - 1 : i + 1;
+    if (swapWith < 0 || swapWith >= value.slides.length) return;
+    const slides = [...value.slides];
+    [slides[i], slides[swapWith]] = [slides[swapWith], slides[i]];
+    onChange({ ...value, slides });
+  }
+
   return (
     <div className="space-y-3">
       <Label>Slides</Label>
+      {value.slides.length === 0 ? (
+        <p className="text-sm text-muted-foreground">
+          Add at least one slide — the slider needs 1 to 5 to save.
+        </p>
+      ) : null}
       {value.slides.map((slide, i) => (
         <div key={i} className="space-y-2 rounded-lg border p-3">
-          <Input placeholder="Kicker" value={slide.kicker} onChange={(e) => updateSlide(i, { kicker: e.target.value })} />
-          <Input placeholder="Title" value={slide.title} onChange={(e) => updateSlide(i, { title: e.target.value })} />
-          <Textarea placeholder="Subtext" rows={2} value={slide.subtext} onChange={(e) => updateSlide(i, { subtext: e.target.value })} />
-          <Input placeholder="CTA label" value={slide.ctaLabel} onChange={(e) => updateSlide(i, { ctaLabel: e.target.value })} />
-          <Select value={slide.category} onValueChange={(v) => updateSlide(i, { category: v as SliderBlockData["slides"][number]["category"] })}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Choose a category" />
-            </SelectTrigger>
-            <SelectContent>
-              {CATEGORY_ORDER.map((c) => (
-                <SelectItem key={c} value={c}>
-                  {CATEGORY_META[c].label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium">Slide {i + 1}</p>
+            <div className="flex items-center gap-1">
+              <Button type="button" variant="ghost" size="icon-sm" disabled={i === 0} onClick={() => moveSlide(i, "up")} aria-label={`Move slide ${i + 1} up`}>
+                <ArrowUp className="size-4" aria-hidden="true" />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                disabled={i === value.slides.length - 1}
+                onClick={() => moveSlide(i, "down")}
+                aria-label={`Move slide ${i + 1} down`}
+              >
+                <ArrowDown className="size-4" aria-hidden="true" />
+              </Button>
+            </div>
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor={`slide-${i}-kicker`}>Kicker</Label>
+            <Input id={`slide-${i}-kicker`} value={slide.kicker} onChange={(e) => updateSlide(i, { kicker: e.target.value })} required />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor={`slide-${i}-title`}>Title</Label>
+            <Input id={`slide-${i}-title`} value={slide.title} onChange={(e) => updateSlide(i, { title: e.target.value })} required />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor={`slide-${i}-subtext`}>Subtext</Label>
+            <Textarea id={`slide-${i}-subtext`} rows={2} value={slide.subtext} onChange={(e) => updateSlide(i, { subtext: e.target.value })} />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor={`slide-${i}-cta`}>CTA label</Label>
+            <Input id={`slide-${i}-cta`} value={slide.ctaLabel} onChange={(e) => updateSlide(i, { ctaLabel: e.target.value })} required />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor={`slide-${i}-category-trigger`}>Category</Label>
+            <Select value={slide.category} onValueChange={(v) => updateSlide(i, { category: v as SliderBlockData["slides"][number]["category"] })}>
+              <SelectTrigger id={`slide-${i}-category-trigger`} className="w-full">
+                <SelectValue placeholder="Choose a category">
+                  {(value: SliderBlockData["slides"][number]["category"]) => CATEGORY_META[value].label}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {CATEGORY_ORDER.map((c) => (
+                  <SelectItem key={c} value={c}>
+                    {CATEGORY_META[c].label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <Button type="button" variant="ghost" size="sm" onClick={() => onChange({ ...value, slides: value.slides.filter((_, idx) => idx !== i) })}>
             <X className="size-4" aria-hidden="true" />
             Remove slide

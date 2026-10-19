@@ -40,7 +40,7 @@ export default async function AdminContentPageDetail({
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-xl font-semibold">{SITE_PAGE_LABEL[page]}</h1>
-        <ContentBlockFormDialog mode="create" page={page} />
+        <ContentBlockFormDialog mode="create" page={page} hasSlider={blocks.some((b) => b.type === "SLIDER")} />
       </div>
 
       {blocks.length === 0 ? (

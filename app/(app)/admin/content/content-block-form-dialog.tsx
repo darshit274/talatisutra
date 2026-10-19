@@ -36,7 +36,7 @@ const EMPTY_DATA: Record<ContentBlockType, BlockData> = {
 };
 
 type Props =
-  | { mode: "create"; page: SitePage }
+  | { mode: "create"; page: SitePage; hasSlider?: boolean }
   | { mode: "edit"; id: string; type: ContentBlockType; data: BlockData };
 
 const initialState: ContentBlockFormState = {};
@@ -140,11 +140,16 @@ export function ContentBlockFormDialog(props: Props) {
                 <SelectValue placeholder="Choose a block type" />
               </SelectTrigger>
               <SelectContent>
-                {(Object.keys(BLOCK_TYPE_LABEL) as ContentBlockType[]).map((t) => (
-                  <SelectItem key={t} value={t}>
-                    {BLOCK_TYPE_LABEL[t]}
-                  </SelectItem>
-                ))}
+                {(Object.keys(BLOCK_TYPE_LABEL) as ContentBlockType[])
+                  // SLIDER is Home's hero carousel — the page only ever renders one,
+                  // bound to the page component's own layout, so it isn't offered on
+                  // other pages or once one already exists (review finding M-3).
+                  .filter((t) => t !== "SLIDER" || (props.page === "HOME" && !props.hasSlider))
+                  .map((t) => (
+                    <SelectItem key={t} value={t}>
+                      {BLOCK_TYPE_LABEL[t]}
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
           </div>

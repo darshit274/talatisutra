@@ -50,10 +50,12 @@ export default async function AdminArticlesPage({
 
       <form method="get" className="flex flex-wrap items-end gap-4 rounded-lg border p-4">
         <div className="space-y-2">
-          <Label htmlFor="category-trigger">Category</Label>
+          <Label htmlFor="filter-category-trigger">Category</Label>
           <Select name="category" defaultValue={category ?? ""}>
-            <SelectTrigger id="category-trigger" className="w-56">
-              <SelectValue placeholder="All categories" />
+            <SelectTrigger id="filter-category-trigger" className="w-56">
+              <SelectValue placeholder="All categories">
+                {(value: ArticleCategory | "") => (value ? CATEGORY_META[value].label : "All categories")}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="">All categories</SelectItem>

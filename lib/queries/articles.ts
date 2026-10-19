@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { prisma } from "@/lib/db/prisma";
 import type { ArticleCategory } from "@prisma/client";
 import { CATEGORY_ORDER } from "@/lib/articles/categories";
@@ -21,9 +22,11 @@ export async function getArticles(category?: ArticleCategory) {
   });
 }
 
-export async function getArticleById(id: string) {
+// Cached per request — the article detail page calls this from both
+// generateMetadata and the page component itself (review finding M-6).
+export const getArticleById = cache(async (id: string) => {
   return prisma.article.findUnique({ where: { id } });
-}
+});
 
 export async function getArticleCategoryCounts(): Promise<Record<ArticleCategory, number>> {
   const counts = await prisma.article.groupBy({ by: ["category"], _count: true });

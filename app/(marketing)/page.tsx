@@ -7,7 +7,8 @@ import { CardGridBlock } from "@/components/content/card-grid-block";
 import { HomeNewsSidebar } from "./_components/home-news-sidebar";
 import { HomeNewsletterSection } from "./_components/home-newsletter-section";
 import { HomeServicesSection } from "./_components/home-services-section";
-import type { SliderBlockData, TextBlockData, CardGridBlockData } from "@/lib/validation/content";
+import { sliderBlockDataSchema } from "@/lib/validation/content";
+import type { TextBlockData, CardGridBlockData } from "@/lib/validation/content";
 
 export const metadata: Metadata = {
   robots: { index: true, follow: true },
@@ -23,7 +24,11 @@ export default async function HomePage() {
   const textBlock = blocks.find((b) => b.type === "TEXT");
   const cardGridBlock = blocks.find((b) => b.type === "CARD_GRID");
 
-  const slides = sliderBlock ? (sliderBlock.data as SliderBlockData).slides : [];
+  // Defensive, not just a cast — this data came back off a Prisma Json column and the
+  // save path validates it, but a render path should never trust that blindly (review
+  // finding M-6): a malformed row degrades to "no slider" instead of crashing Home.
+  const sliderParsed = sliderBlock ? sliderBlockDataSchema.safeParse(sliderBlock.data) : null;
+  const slides = sliderParsed?.success ? sliderParsed.data.slides : [];
   const enrichedSlides = await Promise.all(
     slides.map(async (slide) => ({
       ...slide,

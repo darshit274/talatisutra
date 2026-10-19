@@ -13,16 +13,39 @@ type EnrichedSlide = SliderBlockData["slides"][number] & { articles: Article[] }
 
 const AUTOPLAY_MS = 6500;
 
+function usePrefersReducedMotion(): boolean {
+  // Lazy initializer reads the real value on the client's first render instead of
+  // setState-ing it from inside an effect (this project's lint flags that as a
+  // cascading-render risk — same reasoning as ContentBlockFormDialog's own note on
+  // this). SSR has no window, so the server-rendered value is always false; the
+  // client's first render corrects it before paint.
+  const [reduced, setReduced] = useState(
+    () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
+  useEffect(() => {
+    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const onChange = () => setReduced(query.matches);
+    query.addEventListener("change", onChange);
+    return () => query.removeEventListener("change", onChange);
+  }, []);
+  return reduced;
+}
+
 export function SliderBlock({ slides }: { slides: EnrichedSlide[] }) {
   const [active, setActive] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const reducedMotion = usePrefersReducedMotion();
 
   useEffect(() => {
-    if (slides.length <= 1) return;
+    // Autoplay stops entirely under prefers-reduced-motion (WCAG 2.3.3), and
+    // pauses while a pointer or keyboard focus is anywhere in the slider (WCAG
+    // 2.2.2) — review finding M-5.
+    if (slides.length <= 1 || paused || reducedMotion) return;
     const id = setInterval(() => {
       setActive((i) => (i + 1) % slides.length);
     }, AUTOPLAY_MS);
     return () => clearInterval(id);
-  }, [slides.length]);
+  }, [slides.length, paused, reducedMotion]);
 
   if (slides.length === 0) return null;
   const slide = slides[active];
@@ -30,7 +53,17 @@ export function SliderBlock({ slides }: { slides: EnrichedSlide[] }) {
   const hasPdf = slide.articles.some((a) => a.pdfKey);
 
   return (
-    <section className="border-b">
+    <section
+      className="border-b"
+      aria-roledescription="carousel"
+      aria-label="Featured resolutions"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocus={() => setPaused(true)}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setPaused(false);
+      }}
+    >
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-16 md:grid-cols-2 md:items-center">
         <div>
           <p className="text-sm font-medium text-primary">{slide.kicker}</p>
@@ -91,14 +124,13 @@ export function SliderBlock({ slides }: { slides: EnrichedSlide[] }) {
           {String(active + 1).padStart(2, "0")} / {String(slides.length).padStart(2, "0")}
         </span>
 
-        <div className="flex items-center gap-2" role="tablist" aria-label="Slides">
+        <div className="flex items-center gap-2" role="group" aria-label="Slide navigation">
           {slides.map((s, i) => (
             <button
               key={s.category + i}
               type="button"
-              role="tab"
-              aria-selected={i === active}
-              aria-label={`Show slide ${i + 1}`}
+              aria-current={i === active ? "true" : undefined}
+              aria-label={`Show slide ${i + 1} of ${slides.length}`}
               onClick={() => setActive(i)}
               className={`size-2 rounded-full ${i === active ? "bg-primary" : "bg-muted-foreground/30"}`}
             />
