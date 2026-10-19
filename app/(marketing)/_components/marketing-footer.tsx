@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CATEGORY_META, CATEGORY_ORDER } from "@/lib/articles/categories";
+import { getArticleCategories } from "@/lib/queries/article-categories";
 import { getSiteSettings } from "@/lib/queries/site-settings";
 
 const NAV_LINKS = [
@@ -12,7 +12,7 @@ const NAV_LINKS = [
 
 export async function MarketingFooter() {
   const year = new Date().getFullYear();
-  const settings = await getSiteSettings();
+  const [settings, categories] = await Promise.all([getSiteSettings(), getArticleCategories()]);
 
   return (
     <footer className="border-t">
@@ -43,20 +43,22 @@ export async function MarketingFooter() {
           </nav>
         </div>
 
-        <div>
-          <p className="text-sm font-medium">Categories</p>
-          <nav className="mt-3 flex flex-col gap-2">
-            {CATEGORY_ORDER.map((category) => (
-              <Link
-                key={category}
-                href={CATEGORY_META[category].path}
-                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {CATEGORY_META[category].label}
-              </Link>
-            ))}
-          </nav>
-        </div>
+        {categories.length > 0 ? (
+          <div>
+            <p className="text-sm font-medium">Categories</p>
+            <nav className="mt-3 flex flex-col gap-2">
+              {categories.map((category) => (
+                <Link
+                  key={category.id}
+                  href={`/articles?category=${category.slug}`}
+                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {category.name}
+                </Link>
+              ))}
+            </nav>
+          </div>
+        ) : null}
 
         <div>
           <p className="text-sm font-medium">Contact</p>
