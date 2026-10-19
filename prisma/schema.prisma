@@ -41,15 +41,6 @@ enum ContentBlockType {
   SLIDER
 }
 
-enum ArticleCategory {
-  GR_CIRCULARS
-  LAND_RECORDS
-  PANCHAYAT_ADMINISTRATION
-  EXAM_PREPARATION
-  SALARY_SERVICE_RULES
-  FORMS_DOWNLOADS
-}
-
 model Department {
   id        String               @id @default(cuid())
   name      String               @unique
@@ -158,6 +149,21 @@ model Category {
   @@index([parentId])
 }
 
+model ArticleCategory {
+  id                  String    @id @default(cuid())
+  name                String    @unique
+  slug                String    @unique
+  icon                String
+  shortDescription    String    @db.Text
+  servicesDescription String    @db.Text
+  tags                Json
+  sortOrder           Int       @default(0)
+  createdAt           DateTime  @default(now())
+  articles            Article[]
+
+  @@index([sortOrder])
+}
+
 model ContentBlock {
   id          String           @id @default(cuid())
   page        SitePage
@@ -231,7 +237,8 @@ model ContactEnquiry {
 
 model Article {
   id          String          @id @default(cuid())
-  category    ArticleCategory
+  categoryId  String
+  category    ArticleCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   title       String          @db.VarChar(200)
   excerpt     String          @db.VarChar(300)
   body        String          @db.Text
@@ -242,7 +249,7 @@ model Article {
   updatedById String?
   updatedBy   User?           @relation("ArticleUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
 
-  @@index([category, publishedAt])
+  @@index([categoryId, publishedAt])
 }
 
 model NewsletterSubscriber {
