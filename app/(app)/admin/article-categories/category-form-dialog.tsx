@@ -57,20 +57,36 @@ export function CategoryFormDialog(props: Props) {
   const formRef = useRef<HTMLFormElement>(null);
 
   // Close and reset only on a genuine pending->not-pending transition with no
-  // error, same guard shape as the Materials category dialog.
+  // error. Split into single-setState effects, all gated by the same
+  // `wasPending` guard, because this project's react-hooks lint flags
+  // multiple setState calls in one effect body as a cascading-render risk
+  // (same shape as ContentBlockFormDialog's own success-detection split) —
+  // only the last, setState-free effect is allowed to advance the guard.
   const wasPending = useRef(false);
+
   useEffect(() => {
     if (wasPending.current && !pending && !state.error) {
       setOpen(false);
-      if (props.mode === "create") {
-        formRef.current?.reset();
-        setName("");
-        setSlug("");
-        slugTouched.current = false;
-      }
     }
-    wasPending.current = pending;
+  }, [pending, state.error]);
+
+  useEffect(() => {
+    if (props.mode === "create" && wasPending.current && !pending && !state.error) {
+      formRef.current?.reset();
+      setName("");
+    }
   }, [pending, state.error, props.mode]);
+
+  useEffect(() => {
+    if (props.mode === "create" && wasPending.current && !pending && !state.error) {
+      setSlug("");
+      slugTouched.current = false;
+    }
+  }, [pending, state.error, props.mode]);
+
+  useEffect(() => {
+    wasPending.current = pending;
+  }, [pending]);
 
   function handleNameChange(value: string) {
     setName(value);
