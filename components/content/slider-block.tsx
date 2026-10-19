@@ -3,13 +3,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import type { Article } from "@prisma/client";
+import type { Article, ArticleCategory } from "@prisma/client";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CATEGORY_META } from "@/lib/articles/categories";
 import type { SliderBlockData } from "@/lib/validation/content";
 
-type EnrichedSlide = SliderBlockData["slides"][number] & { articles: Article[] };
+type EnrichedSlide = SliderBlockData["slides"][number] & { articles: Article[]; categoryInfo: ArticleCategory };
 
 const AUTOPLAY_MS = 6500;
 
@@ -49,7 +48,7 @@ export function SliderBlock({ slides }: { slides: EnrichedSlide[] }) {
 
   if (slides.length === 0) return null;
   const slide = slides[active];
-  const category = CATEGORY_META[slide.category];
+  const category = slide.categoryInfo;
   const hasPdf = slide.articles.some((a) => a.pdfKey);
 
   return (
@@ -69,7 +68,7 @@ export function SliderBlock({ slides }: { slides: EnrichedSlide[] }) {
           <p className="text-sm font-medium text-primary">{slide.kicker}</p>
           <h1 className="font-heading mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">{slide.title}</h1>
           <p className="mt-4 max-w-xl text-muted-foreground">{slide.subtext}</p>
-          <Link href={category.path} className={buttonVariants({ variant: "outline-accent", size: "lg", className: "mt-8" })}>
+          <Link href={`/articles?category=${category.slug}`} className={buttonVariants({ variant: "outline-accent", size: "lg", className: "mt-8" })}>
             {slide.ctaLabel}
           </Link>
         </div>
@@ -102,7 +101,7 @@ export function SliderBlock({ slides }: { slides: EnrichedSlide[] }) {
             </p>
           )}
           <Link
-            href={category.path}
+            href={`/articles?category=${category.slug}`}
             className="mt-4 inline-block text-sm font-medium text-primary hover:underline"
           >
             Browse the full collection →

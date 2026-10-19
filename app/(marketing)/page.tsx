@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getPageBlocks } from "@/lib/queries/content";
 import { getLatestArticles, getLatestArticlesByCategory } from "@/lib/queries/articles";
+import { getArticleCategories } from "@/lib/queries/article-categories";
 import { SliderBlock } from "@/components/content/slider-block";
 import { CardGridBlock } from "@/components/content/card-grid-block";
 import { HomeNewsSidebar } from "./_components/home-news-sidebar";
@@ -15,9 +16,10 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [blocks, latestArticles] = await Promise.all([
+  const [blocks, latestArticles, categories] = await Promise.all([
     getPageBlocks("HOME"),
     getLatestArticles(7),
+    getArticleCategories(),
   ]);
 
   const sliderBlock = blocks.find((b) => b.type === "SLIDER");
@@ -29,11 +31,19 @@ export default async function HomePage() {
   // finding M-6): a malformed row degrades to "no slider" instead of crashing Home.
   const sliderParsed = sliderBlock ? sliderBlockDataSchema.safeParse(sliderBlock.data) : null;
   const slides = sliderParsed?.success ? sliderParsed.data.slides : [];
-  const enrichedSlides = await Promise.all(
-    slides.map(async (slide) => ({
-      ...slide,
-      articles: await getLatestArticlesByCategory(slide.category, 3),
-    })),
+  const enrichedSlidesWithMaybeCategory = await Promise.all(
+    slides.map(async (slide) => {
+      const categoryInfo = categories.find((c) => c.slug === slide.category);
+      return { ...slide, articles: await getLatestArticlesByCategory(slide.category, 3), categoryInfo };
+    }),
+  );
+  // Drops a slide whose stored slug has no matching category row (e.g. the
+  // category was deleted — shouldn't happen given the delete guard, but a
+  // render path should never trust stored data blindly) rather than letting
+  // an undefined categoryInfo reach SliderBlock.
+  const enrichedSlides = enrichedSlidesWithMaybeCategory.filter(
+    (slide): slide is typeof slide & { categoryInfo: NonNullable<typeof slide.categoryInfo> } =>
+      slide.categoryInfo !== undefined,
   );
 
   return (
@@ -53,7 +63,7 @@ export default async function HomePage() {
       {cardGridBlock ? <CardGridBlock data={cardGridBlock.data as CardGridBlockData} /> : null}
 
       <HomeNewsletterSection />
-      <HomeServicesSection />
+      <HomeServicesSection categories={categories} />
     </>
   );
 }
