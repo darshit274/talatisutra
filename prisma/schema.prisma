@@ -28,6 +28,9 @@ enum SitePage {
   ABOUT
   SERVICES
   CONTACT
+  ARTICLES
+  PRIVACY
+  DISCLAIMER
 }
 
 enum ContentBlockType {

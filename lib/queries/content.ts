@@ -18,6 +18,9 @@ export const SITE_PAGE_PATH: Record<SitePage, string> = {
   ABOUT: "/about",
   SERVICES: "/services",
   CONTACT: "/contact",
+  ARTICLES: "/articles",
+  PRIVACY: "/privacy",
+  DISCLAIMER: "/disclaimer",
 };
 
 export const SITE_PAGE_LABEL: Record<SitePage, string> = {
@@ -25,6 +28,9 @@ export const SITE_PAGE_LABEL: Record<SitePage, string> = {
   ABOUT: "About",
   SERVICES: "Services",
   CONTACT: "Contact",
+  ARTICLES: "Articles",
+  PRIVACY: "Privacy",
+  DISCLAIMER: "Disclaimer",
 };
 
 /** Admin URL segments are the lowercase enum value (e.g. "/admin/content/home"). Returns
