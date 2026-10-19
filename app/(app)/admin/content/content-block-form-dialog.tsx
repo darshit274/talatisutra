@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useRef, useState } from "react";
 import { Plus, Pencil } from "lucide-react";
-import type { ContentBlockType, SitePage } from "@prisma/client";
+import type { ArticleCategory, ContentBlockType, SitePage } from "@prisma/client";
 import {
   Dialog,
   DialogContent,
@@ -36,8 +36,8 @@ const EMPTY_DATA: Record<ContentBlockType, BlockData> = {
 };
 
 type Props =
-  | { mode: "create"; page: SitePage; hasSlider?: boolean }
-  | { mode: "edit"; id: string; type: ContentBlockType; data: BlockData };
+  | { mode: "create"; page: SitePage; hasSlider?: boolean; categories: ArticleCategory[] }
+  | { mode: "edit"; id: string; type: ContentBlockType; data: BlockData; categories: ArticleCategory[] };
 
 const initialState: ContentBlockFormState = {};
 
@@ -162,7 +162,9 @@ export function ContentBlockFormDialog(props: Props) {
             {type === "TEXT" ? <TextFields value={data as TextBlockData} onChange={setData} /> : null}
             {type === "CARD_GRID" ? <CardGridFields value={data as CardGridBlockData} onChange={setData} /> : null}
             {type === "CTA_BAND" ? <CtaBandFields value={data as CtaBandBlockData} onChange={setData} /> : null}
-            {type === "SLIDER" ? <SliderFields value={data as SliderBlockData} onChange={setData} /> : null}
+            {type === "SLIDER" ? (
+              <SliderFields value={data as SliderBlockData} onChange={setData} categories={props.categories} />
+            ) : null}
 
             {visibleError ? <p className="text-sm text-destructive">{visibleError}</p> : null}
             <DialogFooter>

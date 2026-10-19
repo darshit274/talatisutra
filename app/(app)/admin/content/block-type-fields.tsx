@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, X, ArrowUp, ArrowDown } from "lucide-react";
 import { SiteImageUploadField } from "./site-image-upload-field";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CATEGORY_META, CATEGORY_ORDER } from "@/lib/articles/categories";
+import type { ArticleCategory } from "@prisma/client";
 import type {
   HeroBlockData,
   TextBlockData,
@@ -115,7 +115,15 @@ export function CardGridFields({ value, onChange }: { value: CardGridBlockData; 
   );
 }
 
-export function SliderFields({ value, onChange }: { value: SliderBlockData; onChange: (v: SliderBlockData) => void }) {
+export function SliderFields({
+  value,
+  onChange,
+  categories,
+}: {
+  value: SliderBlockData;
+  onChange: (v: SliderBlockData) => void;
+  categories: ArticleCategory[];
+}) {
   function updateSlide(i: number, patch: Partial<SliderBlockData["slides"][number]>) {
     onChange({ ...value, slides: value.slides.map((s, idx) => (idx === i ? { ...s, ...patch } : s)) });
   }
@@ -174,16 +182,16 @@ export function SliderFields({ value, onChange }: { value: SliderBlockData; onCh
           </div>
           <div className="space-y-1">
             <Label htmlFor={`slide-${i}-category-trigger`}>Category</Label>
-            <Select value={slide.category} onValueChange={(v) => updateSlide(i, { category: v as SliderBlockData["slides"][number]["category"] })}>
+            <Select value={slide.category} onValueChange={(v) => updateSlide(i, { category: v ?? "" })}>
               <SelectTrigger id={`slide-${i}-category-trigger`} className="w-full">
                 <SelectValue placeholder="Choose a category">
-                  {(value: SliderBlockData["slides"][number]["category"]) => CATEGORY_META[value].label}
+                  {(value: string) => categories.find((c) => c.slug === value)?.name}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                {CATEGORY_ORDER.map((c) => (
-                  <SelectItem key={c} value={c}>
-                    {CATEGORY_META[c].label}
+                {categories.map((c) => (
+                  <SelectItem key={c.id} value={c.slug}>
+                    {c.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -205,7 +213,7 @@ export function SliderFields({ value, onChange }: { value: SliderBlockData; onCh
               ...value,
               slides: [
                 ...value.slides,
-                { kicker: "", title: "", subtext: "", ctaLabel: "", category: CATEGORY_ORDER[0] },
+                { kicker: "", title: "", subtext: "", ctaLabel: "", category: categories[0]?.slug ?? "" },
               ],
             })
           }

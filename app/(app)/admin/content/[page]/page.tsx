@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowUp, ArrowDown } from "lucide-react";
 import { requireAdmin } from "@/lib/auth/session";
 import { getPageBlocks, SITE_PAGE_LABEL, parseSitePageSegment } from "@/lib/queries/content";
+import { getArticleCategories } from "@/lib/queries/article-categories";
 import { BLOCK_TYPE_LABEL, getBlockPreviewText } from "@/lib/validation/content";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -34,13 +35,18 @@ export default async function AdminContentPageDetail({
     notFound();
   }
 
-  const blocks = await getPageBlocks(page);
+  const [blocks, categories] = await Promise.all([getPageBlocks(page), getArticleCategories()]);
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-xl font-semibold">{SITE_PAGE_LABEL[page]}</h1>
-        <ContentBlockFormDialog mode="create" page={page} hasSlider={blocks.some((b) => b.type === "SLIDER")} />
+        <ContentBlockFormDialog
+          mode="create"
+          page={page}
+          hasSlider={blocks.some((b) => b.type === "SLIDER")}
+          categories={categories}
+        />
       </div>
 
       {blocks.length === 0 ? (
@@ -71,6 +77,7 @@ export default async function AdminContentPageDetail({
                   id={block.id}
                   type={block.type}
                   data={block.data as HeroBlockData | TextBlockData | CardGridBlockData | CtaBandBlockData}
+                  categories={categories}
                 />
                 <DeleteConfirmButton
                   action={deleteContentBlock.bind(null, block.id)}
