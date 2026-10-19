@@ -35,6 +35,7 @@ const ADMIN_LINKS = [
   { href: "/admin/categories", label: "Categories", icon: Tags },
   { href: "/admin/content", label: "Site Content", icon: LayoutTemplate },
   { href: "/admin/articles", label: "Articles", icon: FileText },
+  { href: "/admin/article-categories", label: "Article Categories", icon: Tags },
   { href: "/admin/departments", label: "Departments", icon: Building2 },
   { href: "/admin/employees", label: "Users", icon: Users },
   { href: "/admin/enquiries", label: "Enquiries", icon: Mail },
