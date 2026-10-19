@@ -5,6 +5,8 @@ import { ArticleCategory } from "@prisma/client";
 import { cn } from "cn";
 import { getArticles, getArticleCategoryCounts, getLatestArticles } from "@/lib/queries/articles";
 import { CATEGORY_META, CATEGORY_ORDER } from "@/lib/articles/categories";
+import { getPageBlocks } from "@/lib/queries/content";
+import type { TextBlockData } from "@/lib/validation/content";
 import { ArticleSidebar } from "./_components/article-sidebar";
 
 export const metadata: Metadata = {
@@ -24,21 +26,25 @@ export default async function ArticlesPage({
   const parsed = categoryParamSchema.safeParse(rawCategory || undefined);
   const category = parsed.success ? parsed.data : undefined;
 
-  const [articles, counts, latest] = await Promise.all([
+  const [articles, counts, latest, blocks] = await Promise.all([
     getArticles(category),
     getArticleCategoryCounts(),
     getLatestArticles(5),
+    getPageBlocks("ARTICLES"),
   ]);
 
   const total = Object.values(counts).reduce((sum, c) => sum + c, 0);
+  const textBlock = blocks.find((b) => b.type === "TEXT");
+  const textData = textBlock?.data as TextBlockData | undefined;
+  const heading = textData?.heading ?? "Articles";
+  const intro =
+    textData?.body ??
+    "GRs, circulars, land record guides, exam preparation and forms, organised by subject and date.";
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-16">
-      <h1 className="font-heading text-3xl font-semibold sm:text-4xl">Articles</h1>
-      <p className="mt-2 text-muted-foreground">
-        GRs, circulars, land record guides, exam preparation and forms, organised by
-        subject and date.
-      </p>
+      <h1 className="font-heading text-3xl font-semibold sm:text-4xl">{heading}</h1>
+      <p className="mt-2 text-muted-foreground">{intro}</p>
 
       <div className="mt-6 flex flex-wrap gap-2">
         <Link
