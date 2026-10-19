@@ -77,6 +77,7 @@ model User {
   uploads              Material[]           @relation("UploadedBy")
   updatedContentBlocks ContentBlock[]       @relation("ContentBlockUpdatedBy")
   updatedArticles      Article[]            @relation("ArticleUpdatedBy")
+  updatedSiteSettings  SiteSettings[]       @relation("SiteSettingsUpdatedBy")
   createdAt            DateTime             @default(now())
   updatedAt            DateTime             @updatedAt
 
@@ -165,6 +166,20 @@ model ContentBlock {
   updatedBy   User?            @relation("ContentBlockUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
 
   @@index([page, sortOrder])
+}
+
+model SiteSettings {
+  id                 String   @id @default(cuid())
+  contactEmail       String
+  contactPhone       String
+  contactHours       String
+  contactAddress     String
+  aboutPhotoKey      String?
+  aboutDisclaimer    String   @db.Text
+  contactMapImageKey String?
+  updatedAt          DateTime @updatedAt
+  updatedById        String?
+  updatedBy          User?    @relation("SiteSettingsUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
 }
 
 model Material {
