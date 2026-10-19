@@ -17,7 +17,7 @@ export interface ArticleFormState {
 
 function parseArticleInput(formData: FormData) {
   return articleInputSchema.safeParse({
-    category: formData.get("category"),
+    categoryId: formData.get("categoryId"),
     title: formData.get("title"),
     excerpt: formData.get("excerpt"),
     body: formData.get("body"),
@@ -51,7 +51,7 @@ export async function createArticle(
     action: "article.create",
     entity: "Article",
     entityId: article.id,
-    meta: { category: article.category },
+    meta: { categoryId: article.categoryId },
     ip: getClientIp(await headers()),
   });
 
@@ -89,7 +89,7 @@ export async function updateArticle(
     action: "article.update",
     entity: "Article",
     entityId: id,
-    meta: { category: parsed.data.category },
+    meta: { categoryId: parsed.data.categoryId },
     ip: getClientIp(await headers()),
   });
 
@@ -115,7 +115,7 @@ export async function deleteArticle(id: string): Promise<void> {
     action: "article.delete",
     entity: "Article",
     entityId: id,
-    meta: { category: existing.category },
+    meta: { categoryId: existing.categoryId },
     ip: getClientIp(await headers()),
   });
 

@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
-import { ArticleCategory } from "@prisma/client";
 import { requireAdmin } from "@/lib/auth/session";
 import { getArticles } from "@/lib/queries/articles";
-import { CATEGORY_META, CATEGORY_ORDER } from "@/lib/articles/categories";
+import { getArticleCategories } from "@/lib/queries/article-categories";
 import { deleteArticle } from "./actions";
 import { ArticleFormDialog } from "./article-form-dialog";
 import { ArticleCategoryFilter } from "./article-category-filter";
@@ -14,10 +13,6 @@ export const metadata: Metadata = {
   title: "Articles",
 };
 
-function isArticleCategory(value: string | undefined): value is ArticleCategory {
-  return !!value && (CATEGORY_ORDER as string[]).includes(value);
-}
-
 export default async function AdminArticlesPage({
   searchParams,
 }: {
@@ -25,7 +20,8 @@ export default async function AdminArticlesPage({
 }) {
   await requireAdmin("/admin/articles");
   const { category: rawCategory } = await searchParams;
-  const category = isArticleCategory(rawCategory) ? rawCategory : undefined;
+  const categories = await getArticleCategories();
+  const category = categories.some((c) => c.id === rawCategory) ? rawCategory : undefined;
   const articles = await getArticles(category);
 
   return (
@@ -37,10 +33,10 @@ export default async function AdminArticlesPage({
             {articles.length} article{articles.length === 1 ? "" : "s"}.
           </p>
         </div>
-        <ArticleFormDialog mode="create" />
+        <ArticleFormDialog mode="create" categories={categories} />
       </div>
 
-      <ArticleCategoryFilter category={category} />
+      <ArticleCategoryFilter category={category} categories={categories} />
 
       {articles.length === 0 ? (
         <div className="rounded-lg border p-8 text-center text-sm text-muted-foreground">
@@ -63,7 +59,7 @@ export default async function AdminArticlesPage({
               {articles.map((article) => (
                 <TableRow key={article.id}>
                   <TableCell>
-                    <Badge variant="outline">{CATEGORY_META[article.category].label}</Badge>
+                    <Badge variant="outline">{article.category.name}</Badge>
                   </TableCell>
                   <TableCell className="font-medium">{article.title}</TableCell>
                   <TableCell className="max-w-xs truncate text-muted-foreground">
@@ -77,7 +73,7 @@ export default async function AdminArticlesPage({
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
-                      <ArticleFormDialog mode="edit" article={article} />
+                      <ArticleFormDialog mode="edit" article={article} categories={categories} />
                       <DeleteConfirmButton
                         action={deleteArticle.bind(null, article.id)}
                         title="Delete this article?"

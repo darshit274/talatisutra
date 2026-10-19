@@ -18,11 +18,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "cn";
 import { createArticle, updateArticle, type ArticleFormState } from "./actions";
-import { CATEGORY_META, CATEGORY_ORDER } from "@/lib/articles/categories";
 
 const initialState: ArticleFormState = {};
 
-type Props = { mode: "create" } | { mode: "edit"; article: Article };
+type Props =
+  | { mode: "create"; categories: ArticleCategory[] }
+  | { mode: "edit"; article: Article & { category: ArticleCategory }; categories: ArticleCategory[] };
 
 // Fire-and-forget: best-effort disk cleanup for a PDF this dialog uploaded but never
 // saved (review finding M-4). The route itself refuses to delete a key any Article
@@ -133,16 +134,18 @@ export function ArticleFormDialog(props: Props) {
 
           <div className="space-y-2">
             <Label htmlFor="category-trigger">Category</Label>
-            <Select name="category" defaultValue={props.mode === "edit" ? props.article.category : undefined}>
+            <Select name="categoryId" defaultValue={props.mode === "edit" ? props.article.categoryId : undefined}>
               <SelectTrigger id="category-trigger" className="w-full">
                 <SelectValue placeholder="Choose a category">
-                  {(value: ArticleCategory | undefined) => (value ? CATEGORY_META[value].label : undefined)}
+                  {(value: string | undefined) =>
+                    value ? props.categories.find((c) => c.id === value)?.name : undefined
+                  }
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                {CATEGORY_ORDER.map((c) => (
-                  <SelectItem key={c} value={c}>
-                    {CATEGORY_META[c].label}
+                {props.categories.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.name}
                   </SelectItem>
                 ))}
               </SelectContent>
