@@ -136,7 +136,7 @@ export function ArticleFormDialog(props: Props) {
             <Select name="category" defaultValue={props.mode === "edit" ? props.article.category : undefined}>
               <SelectTrigger id="category-trigger" className="w-full">
                 <SelectValue placeholder="Choose a category">
-                  {(value: ArticleCategory) => CATEGORY_META[value].label}
+                  {(value: ArticleCategory | undefined) => (value ? CATEGORY_META[value].label : undefined)}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
