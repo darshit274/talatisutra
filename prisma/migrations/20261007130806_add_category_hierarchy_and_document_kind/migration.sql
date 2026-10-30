@@ -1,8 +1,8 @@
 -- AlterTable
-ALTER TABLE `category` ADD COLUMN `parentId` VARCHAR(191) NULL;
+ALTER TABLE `Category` ADD COLUMN `parentId` VARCHAR(191) NULL;
 
 -- AlterTable
-ALTER TABLE `material` MODIFY `kind` ENUM('PDF', 'IMAGE', 'DOCUMENT') NOT NULL;
+ALTER TABLE `Material` MODIFY `kind` ENUM('PDF', 'IMAGE', 'DOCUMENT') NOT NULL;
 
 -- CreateIndex
 CREATE INDEX `Category_parentId_idx` ON `Category`(`parentId`);

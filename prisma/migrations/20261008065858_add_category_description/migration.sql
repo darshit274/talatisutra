@@ -1,2 +1,2 @@
 -- AlterTable
-ALTER TABLE `category` ADD COLUMN `description` TEXT NULL;
+ALTER TABLE `Category` ADD COLUMN `description` TEXT NULL;

@@ -1,5 +1,5 @@
 -- AlterTable
-ALTER TABLE `contentblock` MODIFY `page` ENUM('HOME', 'ABOUT', 'SERVICES', 'CONTACT', 'ARTICLES', 'PRIVACY', 'DISCLAIMER') NOT NULL;
+ALTER TABLE `ContentBlock` MODIFY `page` ENUM('HOME', 'ABOUT', 'SERVICES', 'CONTACT', 'ARTICLES', 'PRIVACY', 'DISCLAIMER') NOT NULL;
 
 -- SeedData: one TEXT block per new page, carrying today's real public copy
 -- forward verbatim (articles/page.tsx, privacy/page.tsx, disclaimer/page.tsx),

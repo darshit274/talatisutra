@@ -1,8 +1,8 @@
 -- AlterTable
-ALTER TABLE `contactenquiry` ADD COLUMN `district` VARCHAR(191) NULL;
+ALTER TABLE `ContactEnquiry` ADD COLUMN `district` VARCHAR(191) NULL;
 
 -- AlterTable
-ALTER TABLE `contentblock` MODIFY `type` ENUM('HERO', 'TEXT', 'CARD_GRID', 'CTA_BAND', 'SLIDER') NOT NULL;
+ALTER TABLE `ContentBlock` MODIFY `type` ENUM('HERO', 'TEXT', 'CARD_GRID', 'CTA_BAND', 'SLIDER') NOT NULL;
 
 -- CreateTable
 CREATE TABLE `Article` (

@@ -37,24 +37,24 @@ INSERT INTO `ArticleCategory` (`id`, `name`, `slug`, `icon`, `shortDescription`,
 
 -- 3. Add the new FK column as nullable first, so the 10 existing Article rows
 -- don't block the ALTER before they're backfilled below.
-ALTER TABLE `article` ADD COLUMN `categoryId` VARCHAR(191) NULL;
+ALTER TABLE `Article` ADD COLUMN `categoryId` VARCHAR(191) NULL;
 
 -- 4. Backfill every existing Article row's categoryId from its old enum value.
-UPDATE `article` SET `categoryId` = 'cat-gr-circulars' WHERE `category` = 'GR_CIRCULARS';
-UPDATE `article` SET `categoryId` = 'cat-land-records' WHERE `category` = 'LAND_RECORDS';
-UPDATE `article` SET `categoryId` = 'cat-panchayat-administration' WHERE `category` = 'PANCHAYAT_ADMINISTRATION';
-UPDATE `article` SET `categoryId` = 'cat-exam-preparation' WHERE `category` = 'EXAM_PREPARATION';
-UPDATE `article` SET `categoryId` = 'cat-salary-service-rules' WHERE `category` = 'SALARY_SERVICE_RULES';
-UPDATE `article` SET `categoryId` = 'cat-forms-downloads' WHERE `category` = 'FORMS_DOWNLOADS';
+UPDATE `Article` SET `categoryId` = 'cat-gr-circulars' WHERE `category` = 'GR_CIRCULARS';
+UPDATE `Article` SET `categoryId` = 'cat-land-records' WHERE `category` = 'LAND_RECORDS';
+UPDATE `Article` SET `categoryId` = 'cat-panchayat-administration' WHERE `category` = 'PANCHAYAT_ADMINISTRATION';
+UPDATE `Article` SET `categoryId` = 'cat-exam-preparation' WHERE `category` = 'EXAM_PREPARATION';
+UPDATE `Article` SET `categoryId` = 'cat-salary-service-rules' WHERE `category` = 'SALARY_SERVICE_RULES';
+UPDATE `Article` SET `categoryId` = 'cat-forms-downloads' WHERE `category` = 'FORMS_DOWNLOADS';
 
 -- 5. Now that every row has a categoryId, make it required, add the FK
 -- (RESTRICT — a category with articles can't be deleted), drop the old
 -- enum column and its now-superseded composite index.
-ALTER TABLE `article` MODIFY `categoryId` VARCHAR(191) NOT NULL;
-ALTER TABLE `article` ADD CONSTRAINT `Article_categoryId_fkey` FOREIGN KEY (`categoryId`) REFERENCES `ArticleCategory`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
-DROP INDEX `Article_category_publishedAt_idx` ON `article`;
-ALTER TABLE `article` DROP COLUMN `category`;
-CREATE INDEX `Article_categoryId_publishedAt_idx` ON `article`(`categoryId`, `publishedAt`);
+ALTER TABLE `Article` MODIFY `categoryId` VARCHAR(191) NOT NULL;
+ALTER TABLE `Article` ADD CONSTRAINT `Article_categoryId_fkey` FOREIGN KEY (`categoryId`) REFERENCES `ArticleCategory`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+DROP INDEX `Article_category_publishedAt_idx` ON `Article`;
+ALTER TABLE `Article` DROP COLUMN `category`;
+CREATE INDEX `Article_categoryId_publishedAt_idx` ON `Article`(`categoryId`, `publishedAt`);
 
 -- 6. Every SLIDER ContentBlock stores its own category reference inside a
 -- JSON blob with no foreign key — rewrite any slide's raw enum string to
@@ -64,7 +64,7 @@ CREATE INDEX `Article_categoryId_publishedAt_idx` ON `article`(`categoryId`, `pu
 -- position/id-targeted rewrite would silently miss, or mis-rewrite, a
 -- slider an admin has since reordered, retargeted, or recreated since the
 -- HOME slider shipped (confirmed live-editable since it was built).
-UPDATE `contentblock`
+UPDATE `ContentBlock`
 SET `data` = CAST(
     REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
         CAST(`data` AS CHAR),
