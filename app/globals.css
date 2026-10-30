@@ -1,0 +1,188 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  /* An indirection, not a direct alias of --font-sans: @theme inline substitutes this
+     expression verbatim into the generated .font-heading utility, so if this pointed
+     straight at var(--font-sans) the utility would be permanently pinned to whatever
+     --font-sans resolves to and no scope could ever give headings a different font
+     from body text. Routing through --font-heading-family (an ordinary, non-inlined
+     custom property) is what lets .theme-classical override the two independently. */
+  --font-heading: var(--font-heading-family);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* TalatiSutra brand palette — deep royal blue primary (hue 258) with a subtle cool
+   tint on neutrals, instead of pure grayscale. Destructive stays red, untouched. */
+:root {
+  --background: oklch(0.99 0.004 258);
+  --foreground: oklch(0.18 0.02 258);
+  --card: oklch(0.995 0.002 258);
+  --card-foreground: oklch(0.18 0.02 258);
+  --popover: oklch(0.995 0.002 258);
+  --popover-foreground: oklch(0.18 0.02 258);
+  --primary: oklch(0.45 0.18 258);
+  --primary-foreground: oklch(0.985 0.005 258);
+  --secondary: oklch(0.96 0.01 258);
+  --secondary-foreground: oklch(0.25 0.02 258);
+  --muted: oklch(0.96 0.01 258);
+  --muted-foreground: oklch(0.5 0.02 258);
+  --accent: oklch(0.94 0.03 258);
+  --accent-foreground: oklch(0.25 0.02 258);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.9 0.01 258);
+  --input: oklch(0.9 0.01 258);
+  --ring: oklch(0.45 0.18 258);
+  --chart-1: oklch(0.75 0.12 258);
+  --chart-2: oklch(0.62 0.16 258);
+  --chart-3: oklch(0.5 0.18 258);
+  --chart-4: oklch(0.38 0.16 258);
+  --chart-5: oklch(0.28 0.12 258);
+  --radius: 0.625rem;
+  /* Preserves current behavior (headings render in the same font as body everywhere
+     outside .theme-classical, which redefines this on its own). */
+  --font-heading-family: var(--font-sans);
+  --sidebar: oklch(0.97 0.006 258);
+  --sidebar-foreground: oklch(0.18 0.02 258);
+  --sidebar-primary: oklch(0.45 0.18 258);
+  --sidebar-primary-foreground: oklch(0.985 0.005 258);
+  --sidebar-accent: oklch(0.94 0.03 258);
+  --sidebar-accent-foreground: oklch(0.25 0.02 258);
+  --sidebar-border: oklch(0.9 0.01 258);
+  --sidebar-ring: oklch(0.45 0.18 258);
+}
+
+.dark {
+  --background: oklch(0.16 0.02 258);
+  --foreground: oklch(0.96 0.005 258);
+  --card: oklch(0.21 0.02 258);
+  --card-foreground: oklch(0.96 0.005 258);
+  --popover: oklch(0.21 0.02 258);
+  --popover-foreground: oklch(0.96 0.005 258);
+  --primary: oklch(0.62 0.17 258);
+  --primary-foreground: oklch(0.98 0.005 258);
+  --secondary: oklch(0.27 0.02 258);
+  --secondary-foreground: oklch(0.96 0.005 258);
+  --muted: oklch(0.27 0.02 258);
+  --muted-foreground: oklch(0.7 0.02 258);
+  --accent: oklch(0.3 0.04 258);
+  --accent-foreground: oklch(0.96 0.005 258);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.62 0.17 258);
+  --chart-1: oklch(0.8 0.1 258);
+  --chart-2: oklch(0.68 0.15 258);
+  --chart-3: oklch(0.56 0.17 258);
+  --chart-4: oklch(0.44 0.16 258);
+  --chart-5: oklch(0.34 0.13 258);
+  --sidebar: oklch(0.19 0.02 258);
+  --sidebar-foreground: oklch(0.96 0.005 258);
+  --sidebar-primary: oklch(0.62 0.17 258);
+  --sidebar-primary-foreground: oklch(0.98 0.005 258);
+  --sidebar-accent: oklch(0.3 0.04 258);
+  --sidebar-accent-foreground: oklch(0.96 0.005 258);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.62 0.17 258);
+}
+
+/* "Classical" visual system (spec §1) — scoped to app/(marketing) and app/(auth)'s
+   root elements only, never touching :root, so /portal and /admin keep today's blue
+   shadcn theme untouched. Token values are exact, from the design system's styles.css
+   (spec §1), not approximated. */
+.theme-classical {
+  --background: oklch(from #f3f2f2 l c h);
+  --foreground: oklch(from #201f1d l c h);
+  --card: var(--background);
+  --card-foreground: var(--foreground);
+  --primary: oklch(from #b68235 l c h); /* --color-accent */
+  --primary-foreground: var(--foreground); /* Classical never puts text ON a filled primary — buttons are outlined — so this is mostly unused, kept for type-completeness */
+  --border: color-mix(in srgb, #201f1d 16%, transparent); /* --color-divider */
+  --muted: oklch(from #eae9e9 l c h); /* --color-surface */
+  --muted-foreground: color-mix(in srgb, #201f1d 72%, transparent);
+  --radius: 0.25rem; /* Classical's --radius-md: 4px */
+  --font-sans: var(--font-lora);
+  --font-heading-family: var(--font-cormorant);
+  /* @layer base's `html { @apply font-sans; }` below is compiled by Tailwind to the
+     literal `font-family: var(--font-geist-sans)` (confirmed in the built CSS) —
+     `@apply` resolves the theme reference chain at build time rather than preserving
+     it, so no scope's override of --font-sans ever reaches that rule, the same
+     inlining failure --font-heading hit in Task 9. A direct declaration here is not
+     subject to that resolution (it's hand-written CSS, not a Tailwind utility), and
+     overrides the inherited html-level font for every element under this scope. */
+  font-family: var(--font-lora);
+
+  /* A ~6-8% bump across the type scale — plain Tailwind defaults (16px body text in
+     particular) read noticeably smaller in a serif body face like Lora than they do
+     in a sans-serif UI font, and a lot of this site's secondary content (dates,
+     article-list rows, sidebar items) leans on text-sm/text-xs for what is actually
+     reading content here, not just UI chrome. These are Tailwind's own theme tokens
+     (not the project's `@theme inline` block), so unlike --font-sans they resolve via
+     var() at the point of use — overriding them here reaches every text-* utility
+     under this scope with no per-component edits, and never touches /admin. Each
+     paired --text-*--line-height token is a unitless ratio, so it scales with its
+     font-size automatically and doesn't need its own override. */
+  --text-xs: 0.8125rem; /* 13px, was 12px */
+  --text-sm: 0.9375rem; /* 15px, was 14px */
+  --text-base: 1.0625rem; /* 17px, was 16px */
+  --text-lg: 1.1875rem; /* 19px, was 18px */
+  --text-xl: 1.3125rem; /* 21px, was 20px */
+  --text-2xl: 1.625rem; /* 26px, was 24px */
+  --text-3xl: 2rem; /* 32px, was 30px */
+  --text-4xl: 2.5rem; /* 40px, was 36px */
+  --text-5xl: 3.25rem; /* 52px, was 48px */
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}
