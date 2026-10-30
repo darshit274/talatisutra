@@ -93,7 +93,7 @@ export function SliderBlock({ slides, locale }: { slides: EnrichedSlide[]; local
                         year: "numeric",
                       })}
                     </p>
-                    <p className="mt-1 text-sm font-medium">{article.title}</p>
+                    <p className="mt-1 text-sm font-medium">{pickLocale(locale, article.title, article.titleGu)}</p>
                   </Link>
                 </li>
               ))}
