@@ -28,10 +28,16 @@ import type {
 type BlockData = HeroBlockData | TextBlockData | CardGridBlockData | CtaBandBlockData | SliderBlockData;
 
 const EMPTY_DATA: Record<ContentBlockType, BlockData> = {
-  HERO: { heading: "", subtext: "", buttons: [], imageKey: null },
-  TEXT: { heading: null, body: "" },
-  CARD_GRID: { heading: null, subtext: null, cards: [] },
-  CTA_BAND: { heading: "", subtext: "", button: { label: "", href: "" } },
+  HERO: { heading: "", headingGu: "", subtext: "", subtextGu: "", buttons: [], imageKey: null },
+  TEXT: { heading: null, headingGu: "", body: "", bodyGu: "" },
+  CARD_GRID: { heading: null, headingGu: "", subtext: null, subtextGu: "", cards: [] },
+  CTA_BAND: {
+    heading: "",
+    headingGu: "",
+    subtext: "",
+    subtextGu: "",
+    button: { label: "", labelGu: "", href: "" },
+  },
   SLIDER: { slides: [] },
 };
 

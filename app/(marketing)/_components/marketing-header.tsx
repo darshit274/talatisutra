@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Menu, X, FolderOpen, UserCircle, LogOut } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import {
@@ -12,7 +13,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { SessionUser } from "@/lib/auth/session";
+import type { Locale } from "@/lib/i18n";
 import { logout } from "@/app/(app)/actions";
+import { setLocale } from "@/app/(marketing)/actions";
 
 const NAV_LINKS = [
   { href: "/", label: "Home" },
@@ -49,25 +52,40 @@ function Wordmark() {
   );
 }
 
-export function MarketingHeader({ user }: { user: SessionUser | null }) {
+export function MarketingHeader({ user, locale }: { user: SessionUser | null; locale: Locale }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const closeMobile = () => setMobileOpen(false);
+  const pathname = usePathname();
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background">
       <div className="border-b bg-muted/40">
         <div className="mx-auto flex h-9 max-w-5xl items-center justify-between gap-4 px-4 text-xs text-muted-foreground">
           <p className="truncate">Information resource for Talati-cum-Mantri employees of Gujarat</p>
-          <div className="flex items-center gap-2" aria-hidden="true">
-            <span className="font-medium text-foreground">English</span>
-            <span>/</span>
-            <button
-              type="button"
-              className='font-["Noto_Serif_Gujarati"]'
-              title="Gujarati is a visual option only — this site does not yet translate"
-            >
-              ગુજરાતી
-            </button>
+          <div className="flex items-center gap-2">
+            <form action={setLocale}>
+              <input type="hidden" name="next" value={pathname} />
+              <input type="hidden" name="locale" value="en" />
+              <button
+                type="submit"
+                className={locale === "en" ? "font-medium text-foreground" : "hover:text-foreground"}
+                disabled={locale === "en"}
+              >
+                English
+              </button>
+            </form>
+            <span aria-hidden="true">/</span>
+            <form action={setLocale}>
+              <input type="hidden" name="next" value={pathname} />
+              <input type="hidden" name="locale" value="gu" />
+              <button
+                type="submit"
+                className={`font-["Noto_Serif_Gujarati"] ${locale === "gu" ? "font-medium text-foreground" : "hover:text-foreground"}`}
+                disabled={locale === "gu"}
+              >
+                ગુજરાતી
+              </button>
+            </form>
           </div>
         </div>
       </div>

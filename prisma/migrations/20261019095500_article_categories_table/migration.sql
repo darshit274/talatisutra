@@ -64,9 +64,13 @@ CREATE INDEX `Article_categoryId_publishedAt_idx` ON `Article`(`categoryId`, `pu
 -- position/id-targeted rewrite would silently miss, or mis-rewrite, a
 -- slider an admin has since reordered, retargeted, or recreated since the
 -- HOME slider shipped (confirmed live-editable since it was built).
+-- No outer CAST(... AS JSON): that's MySQL-only syntax and breaks on MariaDB
+-- (local dev's XAMPP engine), which has no JSON cast target. Setting a JSON
+-- column directly from the REPLACE() string result works on both — MySQL
+-- validates/stores it as JSON on assignment, MariaDB stores it as its
+-- LONGTEXT-aliased JSON type, either way with no explicit cast needed.
 UPDATE `ContentBlock`
-SET `data` = CAST(
-    REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
+SET `data` = REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
         CAST(`data` AS CHAR),
         '"GR_CIRCULARS"', '"gr-circulars"'),
         '"LAND_RECORDS"', '"land-records"'),
@@ -74,5 +78,4 @@ SET `data` = CAST(
         '"EXAM_PREPARATION"', '"exam-preparation"'),
         '"SALARY_SERVICE_RULES"', '"salary-service-rules"'),
         '"FORMS_DOWNLOADS"', '"forms-downloads"')
-    AS JSON)
 WHERE `type` = 'SLIDER';

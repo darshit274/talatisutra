@@ -4,6 +4,7 @@ import { getSiteSettings } from "@/lib/queries/site-settings";
 import { BlockRenderer } from "@/components/content/block-renderer";
 import { ContactForm } from "./contact-form";
 import { ContactDetails } from "./_components/contact-details";
+import { getLocale } from "@/lib/i18n-server";
 
 export const metadata: Metadata = {
   title: "Contact",
@@ -11,13 +12,13 @@ export const metadata: Metadata = {
 };
 
 export default async function ContactPage() {
-  const [blocks, settings] = await Promise.all([getPageBlocks("CONTACT"), getSiteSettings()]);
+  const [blocks, settings, locale] = await Promise.all([getPageBlocks("CONTACT"), getSiteSettings(), getLocale()]);
   return (
     <>
-      <BlockRenderer blocks={blocks} />
+      <BlockRenderer blocks={blocks} locale={locale} />
       <div className="mx-auto grid max-w-5xl gap-10 px-4 pb-16 md:grid-cols-[2fr_1fr]">
         <ContactForm />
-        <ContactDetails settings={settings} />
+        <ContactDetails settings={settings} locale={locale} />
       </div>
     </>
   );

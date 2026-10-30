@@ -6,6 +6,8 @@ import { getArticleCategories } from "@/lib/queries/article-categories";
 import { getPageBlocks } from "@/lib/queries/content";
 import type { TextBlockData } from "@/lib/validation/content";
 import { ArticleSidebar } from "./_components/article-sidebar";
+import { pickLocale } from "@/lib/i18n";
+import { getLocale } from "@/lib/i18n-server";
 
 export const metadata: Metadata = {
   title: "Articles",
@@ -26,20 +28,21 @@ export default async function ArticlesPage({
   const matched = categories.find((c) => c.slug === rawCategory);
   const categoryId = matched?.id;
 
-  const [articles, counts, latest, blocks] = await Promise.all([
+  const [articles, counts, latest, blocks, locale] = await Promise.all([
     getArticles(categoryId),
     getArticleCategoryCounts(),
     getLatestArticles(5),
     getPageBlocks("ARTICLES"),
+    getLocale(),
   ]);
 
   const total = Object.values(counts).reduce((sum, c) => sum + c, 0);
   const textBlock = blocks.find((b) => b.type === "TEXT");
   const textData = textBlock?.data as TextBlockData | undefined;
-  const heading = textData?.heading ?? "Articles";
-  const intro =
-    textData?.body ??
-    "GRs, circulars, land record guides, exam preparation and forms, organised by subject and date.";
+  const heading = textData?.heading ? pickLocale(locale, textData.heading, textData.headingGu) : "Articles";
+  const intro = textData?.body
+    ? pickLocale(locale, textData.body, textData.bodyGu)
+    : "GRs, circulars, land record guides, exam preparation and forms, organised by subject and date.";
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-16">
@@ -65,7 +68,7 @@ export default async function ArticlesPage({
               matched?.slug === c.slug ? "border-primary text-primary" : "text-muted-foreground hover:bg-muted/40",
             )}
           >
-            {c.name} ({counts[c.slug]})
+            {pickLocale(locale, c.name, c.nameGu)} ({counts[c.slug]})
           </Link>
         ))}
       </div>
@@ -86,12 +89,16 @@ export default async function ArticlesPage({
                     })}
                   </span>
                   <span>·</span>
-                  <span>{article.category.name}</span>
+                  <span>{pickLocale(locale, article.category.name, article.category.nameGu)}</span>
                 </div>
                 <Link href={`/articles/${article.id}`} className="mt-1 block">
-                  <h2 className="font-heading text-xl font-medium hover:underline">{article.title}</h2>
+                  <h2 className="font-heading text-xl font-medium hover:underline">
+                    {pickLocale(locale, article.title, article.titleGu)}
+                  </h2>
                 </Link>
-                <p className="mt-2 text-sm text-muted-foreground">{article.excerpt}</p>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  {pickLocale(locale, article.excerpt, article.excerptGu)}
+                </p>
                 <p className="mt-2 text-xs text-muted-foreground">
                   {article.pdfLabel ?? "Read article"}
                 </p>
@@ -100,7 +107,13 @@ export default async function ArticlesPage({
           )}
         </div>
 
-        <ArticleSidebar counts={counts} latest={latest} categories={categories} activeCategory={matched?.slug} />
+        <ArticleSidebar
+          counts={counts}
+          latest={latest}
+          categories={categories}
+          activeCategory={matched?.slug}
+          locale={locale}
+        />
       </div>
     </div>
   );

@@ -10,16 +10,19 @@ import { HomeNewsletterSection } from "./_components/home-newsletter-section";
 import { HomeServicesSection } from "./_components/home-services-section";
 import { sliderBlockDataSchema } from "@/lib/validation/content";
 import type { TextBlockData, CardGridBlockData } from "@/lib/validation/content";
+import { pickLocale, type Locale } from "@/lib/i18n";
+import { getLocale } from "@/lib/i18n-server";
 
 export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
 export default async function HomePage() {
-  const [blocks, latestArticles, categories] = await Promise.all([
+  const [blocks, latestArticles, categories, locale] = await Promise.all([
     getPageBlocks("HOME"),
     getLatestArticles(7),
     getArticleCategories(),
+    getLocale(),
   ]);
 
   const sliderBlock = blocks.find((b) => b.type === "SLIDER");
@@ -48,33 +51,35 @@ export default async function HomePage() {
 
   return (
     <>
-      {enrichedSlides.length > 0 ? <SliderBlock slides={enrichedSlides} /> : null}
+      {enrichedSlides.length > 0 ? <SliderBlock slides={enrichedSlides} locale={locale} /> : null}
 
       <div className="mx-auto grid max-w-5xl gap-10 px-4 py-16 md:grid-cols-[2fr_1fr] md:items-start">
         <div>
-          {textBlock ? <TextBlockNoPadding data={textBlock.data as TextBlockData} /> : null}
+          {textBlock ? <TextBlockNoPadding data={textBlock.data as TextBlockData} locale={locale} /> : null}
           <Link href="/about" className="mt-2 inline-block text-sm font-medium text-primary hover:underline">
             More about us →
           </Link>
         </div>
-        <HomeNewsSidebar articles={latestArticles} />
+        <HomeNewsSidebar articles={latestArticles} locale={locale} />
       </div>
 
-      {cardGridBlock ? <CardGridBlock data={cardGridBlock.data as CardGridBlockData} /> : null}
+      {cardGridBlock ? <CardGridBlock data={cardGridBlock.data as CardGridBlockData} locale={locale} /> : null}
 
       <HomeNewsletterSection />
-      <HomeServicesSection categories={categories} />
+      <HomeServicesSection categories={categories} locale={locale} />
     </>
   );
 }
 
 // TextBlock wraps itself in a centered, padded <section>, which doesn't fit this
 // page's two-column grid cell — same data, no section/padding/centering of its own.
-function TextBlockNoPadding({ data }: { data: TextBlockData }) {
-  const paragraphs = data.body.split("\n\n").filter((p) => p.trim().length > 0);
+function TextBlockNoPadding({ data, locale }: { data: TextBlockData; locale: Locale }) {
+  const heading = data.heading ? pickLocale(locale, data.heading, data.headingGu) : null;
+  const body = pickLocale(locale, data.body, data.bodyGu);
+  const paragraphs = body.split("\n\n").filter((p) => p.trim().length > 0);
   return (
     <div>
-      {data.heading ? <h2 className="font-heading text-2xl font-semibold sm:text-3xl">{data.heading}</h2> : null}
+      {heading ? <h2 className="font-heading text-2xl font-semibold sm:text-3xl">{heading}</h2> : null}
       <div className="mt-4 space-y-4 text-muted-foreground">
         {paragraphs.map((paragraph, i) => (
           <p key={i}>{paragraph}</p>

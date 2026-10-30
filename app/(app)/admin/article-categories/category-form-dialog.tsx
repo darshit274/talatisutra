@@ -12,19 +12,22 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "cn";
 import { slugify } from "@/lib/slugify";
+import { BilingualTextarea } from "@/components/admin/bilingual-textarea";
 import { createArticleCategory, updateArticleCategory, type CategoryFormState } from "./actions";
 
 const initialState: CategoryFormState = {};
 
 type CategoryFields = {
   name: string;
+  nameGu: string;
   slug: string;
   shortDescription: string;
+  shortDescriptionGu: string;
   servicesDescription: string;
+  servicesDescriptionGu: string;
   tags: string[];
 };
 
@@ -34,9 +37,12 @@ type Props =
 
 const EMPTY: CategoryFields = {
   name: "",
+  nameGu: "",
   slug: "",
   shortDescription: "",
+  shortDescriptionGu: "",
   servicesDescription: "",
+  servicesDescriptionGu: "",
   tags: [],
 };
 
@@ -52,6 +58,7 @@ export function CategoryFormDialog(props: Props) {
   const [state, formAction, pending] = useActionState(action, initialState);
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(initial.name);
+  const [nameGu, setNameGu] = useState(initial.nameGu);
   const [slug, setSlug] = useState(initial.slug);
   const slugTouched = useRef(props.mode === "edit");
   const formRef = useRef<HTMLFormElement>(null);
@@ -74,6 +81,12 @@ export function CategoryFormDialog(props: Props) {
     if (props.mode === "create" && wasPending.current && !pending && !state.error) {
       formRef.current?.reset();
       setName("");
+    }
+  }, [pending, state.error, props.mode]);
+
+  useEffect(() => {
+    if (props.mode === "create" && wasPending.current && !pending && !state.error) {
+      setNameGu("");
     }
   }, [pending, state.error, props.mode]);
 
@@ -138,6 +151,18 @@ export function CategoryFormDialog(props: Props) {
               required
               autoFocus
             />
+            <div className="space-y-1">
+              <Label htmlFor="category-name-gu" className="text-xs font-normal text-muted-foreground">
+                Name — Gujarati (optional, falls back to English)
+              </Label>
+              <Input
+                id="category-name-gu"
+                name="nameGu"
+                value={nameGu}
+                onChange={(e) => setNameGu(e.target.value)}
+                className='font-["Noto_Serif_Gujarati"]'
+              />
+            </div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="category-slug">Slug</Label>
@@ -150,26 +175,26 @@ export function CategoryFormDialog(props: Props) {
               required
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="category-short-description">Short description</Label>
-            <Textarea
-              id="category-short-description"
-              name="shortDescription"
-              rows={2}
-              defaultValue={initial.shortDescription}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="category-services-description">Services description</Label>
-            <Textarea
-              id="category-services-description"
-              name="servicesDescription"
-              rows={2}
-              defaultValue={initial.servicesDescription}
-              required
-            />
-          </div>
+          <BilingualTextarea
+            label="Short description"
+            idBase="category-short-description"
+            enName="shortDescription"
+            guName="shortDescriptionGu"
+            enDefaultValue={initial.shortDescription}
+            guDefaultValue={initial.shortDescriptionGu}
+            rows={2}
+            required
+          />
+          <BilingualTextarea
+            label="Services description"
+            idBase="category-services-description"
+            enName="servicesDescription"
+            guName="servicesDescriptionGu"
+            enDefaultValue={initial.servicesDescription}
+            guDefaultValue={initial.servicesDescriptionGu}
+            rows={2}
+            required
+          />
           <div className="space-y-2">
             <Label>Tags</Label>
             <div className="grid grid-cols-3 gap-2">

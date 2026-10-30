@@ -7,6 +7,7 @@ import type { Article, ArticleCategory } from "@prisma/client";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { SliderBlockData } from "@/lib/validation/content";
+import { pickLocale, type Locale } from "@/lib/i18n";
 
 type EnrichedSlide = SliderBlockData["slides"][number] & { articles: Article[]; categoryInfo: ArticleCategory };
 
@@ -30,7 +31,7 @@ function usePrefersReducedMotion(): boolean {
   return reduced;
 }
 
-export function SliderBlock({ slides }: { slides: EnrichedSlide[] }) {
+export function SliderBlock({ slides, locale }: { slides: EnrichedSlide[]; locale: Locale }) {
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
   const reducedMotion = usePrefersReducedMotion();
@@ -65,11 +66,13 @@ export function SliderBlock({ slides }: { slides: EnrichedSlide[] }) {
     >
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-16 md:grid-cols-2 md:items-center">
         <div>
-          <p className="text-sm font-medium text-primary">{slide.kicker}</p>
-          <h1 className="font-heading mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">{slide.title}</h1>
-          <p className="mt-4 max-w-xl text-muted-foreground">{slide.subtext}</p>
+          <p className="text-sm font-medium text-primary">{pickLocale(locale, slide.kicker, slide.kickerGu)}</p>
+          <h1 className="font-heading mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">
+            {pickLocale(locale, slide.title, slide.titleGu)}
+          </h1>
+          <p className="mt-4 max-w-xl text-muted-foreground">{pickLocale(locale, slide.subtext, slide.subtextGu)}</p>
           <Link href={`/articles?category=${category.slug}`} className={buttonVariants({ variant: "outline-accent", size: "lg", className: "mt-8" })}>
-            {slide.ctaLabel}
+            {pickLocale(locale, slide.ctaLabel, slide.ctaLabelGu)}
           </Link>
         </div>
 

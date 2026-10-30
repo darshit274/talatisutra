@@ -10,14 +10,25 @@ import { SITE_IMAGE_FILENAME_PATTERN } from "@/lib/site-images/filename";
 // filename — never anything containing a separator or `..` (CLAUDE.md rule 5).
 const imageKeySchema = z.string().regex(SITE_IMAGE_FILENAME_PATTERN, "Invalid image key.").nullable();
 
+// A Gujarati counterpart to a required English field above it. Optional and
+// blank-by-default so older ContentBlock rows written before this field
+// existed still parse — the public site falls back to the English text
+// whenever this is empty (lib/i18n.ts's `pickLocale`).
+function guText(max: number) {
+  return z.string().trim().max(max).optional().default("");
+}
+
 const buttonSchema = z.object({
   label: z.string().trim().min(1, "Button label is required.").max(60),
+  labelGu: guText(60),
   href: z.string().trim().min(1, "Button link is required.").max(500),
 });
 
 export const heroBlockDataSchema = z.object({
   heading: z.string().trim().min(1, "Heading is required.").max(200),
+  headingGu: guText(200),
   subtext: z.string().trim().max(1000),
+  subtextGu: guText(1000),
   buttons: z.array(buttonSchema).max(4),
   imageKey: imageKeySchema,
 });
@@ -25,35 +36,47 @@ export type HeroBlockData = z.infer<typeof heroBlockDataSchema>;
 
 export const textBlockDataSchema = z.object({
   heading: z.string().trim().max(200).nullable(),
+  headingGu: guText(200),
   body: z.string().trim().min(1, "Body text is required.").max(5000),
+  bodyGu: guText(5000),
 });
 export type TextBlockData = z.infer<typeof textBlockDataSchema>;
 
 const cardSchema = z.object({
   title: z.string().trim().min(1, "Card title is required.").max(120),
+  titleGu: guText(120),
   body: z.string().trim().min(1, "Card body is required.").max(1000),
+  bodyGu: guText(1000),
   imageKey: imageKeySchema,
 });
 
 export const cardGridBlockDataSchema = z.object({
   heading: z.string().trim().max(200).nullable(),
+  headingGu: guText(200),
   subtext: z.string().trim().max(1000).nullable(),
+  subtextGu: guText(1000),
   cards: z.array(cardSchema).min(1, "Add at least one card.").max(12),
 });
 export type CardGridBlockData = z.infer<typeof cardGridBlockDataSchema>;
 
 export const ctaBandBlockDataSchema = z.object({
   heading: z.string().trim().min(1, "Heading is required.").max(200),
+  headingGu: guText(200),
   subtext: z.string().trim().max(1000),
+  subtextGu: guText(1000),
   button: buttonSchema,
 });
 export type CtaBandBlockData = z.infer<typeof ctaBandBlockDataSchema>;
 
 const sliderSlideSchema = z.object({
   kicker: z.string().trim().min(1).max(60),
+  kickerGu: guText(60),
   title: z.string().trim().min(1).max(200),
+  titleGu: guText(200),
   subtext: z.string().trim().max(500),
+  subtextGu: guText(500),
   ctaLabel: z.string().trim().min(1).max(60),
+  ctaLabelGu: guText(60),
   // A category slug, not validated against the live category list here —
   // this schema has no database access. Existence is checked where the
   // value is actually used (Task 11's admin editor, Task 12's homepage

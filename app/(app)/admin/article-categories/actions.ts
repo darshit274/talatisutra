@@ -24,9 +24,12 @@ function parseCategoryInput(formData: FormData) {
 
   return articleCategorySchema.safeParse({
     name: formData.get("name"),
+    nameGu: formData.get("nameGu"),
     slug: formData.get("slug"),
     shortDescription: formData.get("shortDescription"),
+    shortDescriptionGu: formData.get("shortDescriptionGu"),
     servicesDescription: formData.get("servicesDescription"),
+    servicesDescriptionGu: formData.get("servicesDescriptionGu"),
     tags,
   });
 }

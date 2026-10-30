@@ -1,12 +1,17 @@
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import type { HeroBlockData } from "@/lib/validation/content";
+import { pickLocale, type Locale } from "@/lib/i18n";
 
-export function HeroBlock({ data }: { data: HeroBlockData }) {
+export function HeroBlock({ data, locale }: { data: HeroBlockData; locale: Locale }) {
   return (
     <section className="mx-auto max-w-5xl px-4 py-20 text-center">
-      <h1 className="font-heading text-4xl font-semibold tracking-tight sm:text-5xl">{data.heading}</h1>
-      <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">{data.subtext}</p>
+      <h1 className="font-heading text-4xl font-semibold tracking-tight sm:text-5xl">
+        {pickLocale(locale, data.heading, data.headingGu)}
+      </h1>
+      <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
+        {pickLocale(locale, data.subtext, data.subtextGu)}
+      </p>
       {data.buttons.length > 0 ? (
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
           {data.buttons.map((button, i) => (
@@ -15,7 +20,7 @@ export function HeroBlock({ data }: { data: HeroBlockData }) {
               href={button.href}
               className={buttonVariants(i === 0 ? { size: "lg" } : { variant: "outline", size: "lg" })}
             >
-              {button.label}
+              {pickLocale(locale, button.label, button.labelGu)}
             </Link>
           ))}
         </div>

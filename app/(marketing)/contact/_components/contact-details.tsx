@@ -1,19 +1,22 @@
 import { Mail, Phone, Clock, MapPin } from "lucide-react";
+import { pickLocale, type Locale } from "@/lib/i18n";
 
 type ContactSettings = {
   contactEmail: string;
   contactPhone: string;
   contactHours: string;
+  contactHoursGu: string | null;
   contactAddress: string;
+  contactAddressGu: string | null;
   contactMapImageKey: string | null;
 };
 
-export function ContactDetails({ settings }: { settings: ContactSettings }) {
+export function ContactDetails({ settings, locale }: { settings: ContactSettings; locale: Locale }) {
   const rows = [
     { icon: Mail, label: "Email", value: settings.contactEmail },
     { icon: Phone, label: "Phone / WhatsApp", value: settings.contactPhone },
-    { icon: Clock, label: "Hours", value: settings.contactHours },
-    { icon: MapPin, label: "Address", value: settings.contactAddress },
+    { icon: Clock, label: "Hours", value: pickLocale(locale, settings.contactHours, settings.contactHoursGu) },
+    { icon: MapPin, label: "Address", value: pickLocale(locale, settings.contactAddress, settings.contactAddressGu) },
   ];
 
   return (

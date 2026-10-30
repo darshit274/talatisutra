@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getPageBlocks } from "@/lib/queries/content";
 import { BlockRenderer } from "@/components/content/block-renderer";
+import { getLocale } from "@/lib/i18n-server";
 
 export const metadata: Metadata = {
   title: "Disclaimer",
@@ -8,6 +9,6 @@ export const metadata: Metadata = {
 };
 
 export default async function DisclaimerPage() {
-  const blocks = await getPageBlocks("DISCLAIMER");
-  return <BlockRenderer blocks={blocks} />;
+  const [blocks, locale] = await Promise.all([getPageBlocks("DISCLAIMER"), getLocale()]);
+  return <BlockRenderer blocks={blocks} locale={locale} />;
 }

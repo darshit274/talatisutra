@@ -5,6 +5,8 @@ import { getArticleCategories } from "@/lib/queries/article-categories";
 import { BlockRenderer } from "@/components/content/block-renderer";
 import { Badge } from "@/components/ui/badge";
 import { resolveIcon } from "@/lib/articles/icons";
+import { pickLocale } from "@/lib/i18n";
+import { getLocale } from "@/lib/i18n-server";
 
 export const metadata: Metadata = {
   title: "Services",
@@ -12,10 +14,14 @@ export const metadata: Metadata = {
 };
 
 export default async function ServicesPage() {
-  const [blocks, categories] = await Promise.all([getPageBlocks("SERVICES"), getArticleCategories()]);
+  const [blocks, categories, locale] = await Promise.all([
+    getPageBlocks("SERVICES"),
+    getArticleCategories(),
+    getLocale(),
+  ]);
   return (
     <>
-      <BlockRenderer blocks={blocks} />
+      <BlockRenderer blocks={blocks} locale={locale} />
 
       {categories.length > 0 ? (
         <div className="mx-auto max-w-3xl divide-y px-4 pb-16">
@@ -30,9 +36,13 @@ export default async function ServicesPage() {
                 <div>
                   <div className="flex items-center gap-2">
                     <Icon className="size-5 text-primary" aria-hidden="true" />
-                    <h2 className="font-heading text-xl font-medium">{category.name}</h2>
+                    <h2 className="font-heading text-xl font-medium">
+                      {pickLocale(locale, category.name, category.nameGu)}
+                    </h2>
                   </div>
-                  <p className="mt-2 text-muted-foreground">{category.servicesDescription}</p>
+                  <p className="mt-2 text-muted-foreground">
+                    {pickLocale(locale, category.servicesDescription, category.servicesDescriptionGu)}
+                  </p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {tags.map((tag) => (
                       <Badge key={tag} variant="accent-outline">
@@ -44,7 +54,7 @@ export default async function ServicesPage() {
                     href={`/articles?category=${category.slug}`}
                     className="mt-3 inline-block text-sm font-medium text-primary hover:underline"
                   >
-                    Open {category.name} →
+                    Open {pickLocale(locale, category.name, category.nameGu)} →
                   </Link>
                 </div>
               </div>

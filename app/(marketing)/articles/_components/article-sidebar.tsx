@@ -1,16 +1,19 @@
 import Link from "next/link";
 import type { Article, ArticleCategory } from "@prisma/client";
+import { pickLocale, type Locale } from "@/lib/i18n";
 
 export function ArticleSidebar({
   counts,
   latest,
   categories,
   activeCategory,
+  locale,
 }: {
   counts: Record<string, number>;
   latest: Article[];
   categories: ArticleCategory[];
   activeCategory?: string;
+  locale: Locale;
 }) {
   return (
     <aside className="space-y-8">
@@ -35,7 +38,7 @@ export function ArticleSidebar({
                 (activeCategory === category.slug ? "font-medium text-primary" : "text-muted-foreground")
               }
             >
-              <span>{category.name}</span>
+              <span>{pickLocale(locale, category.name, category.nameGu)}</span>
               <span className="tabular-nums">{counts[category.slug]}</span>
             </Link>
           ))}
@@ -49,7 +52,7 @@ export function ArticleSidebar({
             {latest.map((article) => (
               <li key={article.id}>
                 <Link href={`/articles/${article.id}`} className="text-sm hover:underline">
-                  {article.title}
+                  {pickLocale(locale, article.title, article.titleGu)}
                 </Link>
               </li>
             ))}

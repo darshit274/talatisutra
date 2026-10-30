@@ -14,9 +14,10 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "cn";
+import { BilingualInput } from "@/components/admin/bilingual-input";
+import { BilingualTextarea } from "@/components/admin/bilingual-textarea";
 import { createArticle, updateArticle, type ArticleFormState } from "./actions";
 
 const initialState: ArticleFormState = {};
@@ -152,32 +153,37 @@ export function ArticleFormDialog(props: Props) {
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="title">Title</Label>
-            <Input id="title" name="title" defaultValue={props.mode === "edit" ? props.article.title : ""} required />
-          </div>
+          <BilingualInput
+            label="Title"
+            idBase="title"
+            enName="title"
+            guName="titleGu"
+            enDefaultValue={props.mode === "edit" ? props.article.title : ""}
+            guDefaultValue={props.mode === "edit" ? props.article.titleGu ?? "" : ""}
+            required
+          />
 
-          <div className="space-y-2">
-            <Label htmlFor="excerpt">Excerpt</Label>
-            <Textarea
-              id="excerpt"
-              name="excerpt"
-              rows={2}
-              defaultValue={props.mode === "edit" ? props.article.excerpt : ""}
-              required
-            />
-          </div>
+          <BilingualTextarea
+            label="Excerpt"
+            idBase="excerpt"
+            enName="excerpt"
+            guName="excerptGu"
+            rows={2}
+            enDefaultValue={props.mode === "edit" ? props.article.excerpt : ""}
+            guDefaultValue={props.mode === "edit" ? props.article.excerptGu ?? "" : ""}
+            required
+          />
 
-          <div className="space-y-2">
-            <Label htmlFor="body">Body</Label>
-            <Textarea
-              id="body"
-              name="body"
-              rows={8}
-              defaultValue={props.mode === "edit" ? props.article.body : ""}
-              required
-            />
-          </div>
+          <BilingualTextarea
+            label="Body"
+            idBase="body"
+            enName="body"
+            guName="bodyGu"
+            rows={8}
+            enDefaultValue={props.mode === "edit" ? props.article.body : ""}
+            guDefaultValue={props.mode === "edit" ? props.article.bodyGu ?? "" : ""}
+            required
+          />
 
           <div className="space-y-2">
             <Label>PDF attachment</Label>

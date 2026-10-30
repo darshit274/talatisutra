@@ -4,8 +4,9 @@ import { useActionState, useState } from "react";
 import type { SiteSettings } from "@prisma/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { BilingualInput } from "@/components/admin/bilingual-input";
+import { BilingualTextarea } from "@/components/admin/bilingual-textarea";
 import { SiteImageUploadField } from "@/app/(app)/admin/content/site-image-upload-field";
 import { updateSiteSettings, type SettingsFormState } from "./actions";
 
@@ -31,26 +32,35 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
         <Input id="contactPhone" name="contactPhone" defaultValue={settings.contactPhone} required />
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="contactHours">Hours</Label>
-        <Input id="contactHours" name="contactHours" defaultValue={settings.contactHours} required />
-      </div>
+      <BilingualInput
+        label="Hours"
+        idBase="contactHours"
+        enName="contactHours"
+        guName="contactHoursGu"
+        enDefaultValue={settings.contactHours}
+        guDefaultValue={settings.contactHoursGu ?? ""}
+        required
+      />
 
-      <div className="space-y-2">
-        <Label htmlFor="contactAddress">Address</Label>
-        <Input id="contactAddress" name="contactAddress" defaultValue={settings.contactAddress} required />
-      </div>
+      <BilingualInput
+        label="Address"
+        idBase="contactAddress"
+        enName="contactAddress"
+        guName="contactAddressGu"
+        enDefaultValue={settings.contactAddress}
+        guDefaultValue={settings.contactAddressGu ?? ""}
+        required
+      />
 
-      <div className="space-y-2">
-        <Label htmlFor="aboutDisclaimer">About page closing disclaimer</Label>
-        <Textarea
-          id="aboutDisclaimer"
-          name="aboutDisclaimer"
-          rows={3}
-          defaultValue={settings.aboutDisclaimer}
-          required
-        />
-      </div>
+      <BilingualTextarea
+        label="About page closing disclaimer"
+        idBase="aboutDisclaimer"
+        enName="aboutDisclaimer"
+        guName="aboutDisclaimerGu"
+        enDefaultValue={settings.aboutDisclaimer}
+        guDefaultValue={settings.aboutDisclaimerGu ?? ""}
+        required
+      />
 
       <SiteImageUploadField label="About photo" value={aboutPhotoKey} onChange={setAboutPhotoKey} />
       <SiteImageUploadField label="Contact map image" value={contactMapImageKey} onChange={setContactMapImageKey} />

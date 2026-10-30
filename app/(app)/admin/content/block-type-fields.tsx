@@ -16,35 +16,135 @@ import type {
   SliderBlockData,
 } from "@/lib/validation/content";
 
+/**
+ * Controlled English+Gujarati input pair, for the JSON-backed block editors
+ * below (unlike components/admin/bilingual-input.tsx's uncontrolled,
+ * name-attribute version used by the other admin forms — this data never
+ * has its own form field names, it's assembled into one `data` JSON blob).
+ */
+function BilingualField({
+  label,
+  idBase,
+  enValue,
+  guValue,
+  onEnChange,
+  onGuChange,
+  required,
+}: {
+  label: string;
+  idBase: string;
+  enValue: string;
+  guValue: string;
+  onEnChange: (v: string) => void;
+  onGuChange: (v: string) => void;
+  required?: boolean;
+}) {
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={idBase}>{label}</Label>
+      <Input id={idBase} value={enValue} onChange={(e) => onEnChange(e.target.value)} required={required} />
+      <div className="space-y-1">
+        <Label htmlFor={`${idBase}-gu`} className="text-xs font-normal text-muted-foreground">
+          {label} — Gujarati (optional, falls back to English)
+        </Label>
+        <Input
+          id={`${idBase}-gu`}
+          value={guValue}
+          onChange={(e) => onGuChange(e.target.value)}
+          className='font-["Noto_Serif_Gujarati"]'
+        />
+      </div>
+    </div>
+  );
+}
+
+/** Textarea counterpart to BilingualField above. */
+function BilingualTextareaField({
+  label,
+  idBase,
+  enValue,
+  guValue,
+  onEnChange,
+  onGuChange,
+  rows = 2,
+  required,
+}: {
+  label: string;
+  idBase: string;
+  enValue: string;
+  guValue: string;
+  onEnChange: (v: string) => void;
+  onGuChange: (v: string) => void;
+  rows?: number;
+  required?: boolean;
+}) {
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={idBase}>{label}</Label>
+      <Textarea id={idBase} rows={rows} value={enValue} onChange={(e) => onEnChange(e.target.value)} required={required} />
+      <div className="space-y-1">
+        <Label htmlFor={`${idBase}-gu`} className="text-xs font-normal text-muted-foreground">
+          {label} — Gujarati (optional, falls back to English)
+        </Label>
+        <Textarea
+          id={`${idBase}-gu`}
+          rows={rows}
+          value={guValue}
+          onChange={(e) => onGuChange(e.target.value)}
+          className='font-["Noto_Serif_Gujarati"]'
+        />
+      </div>
+    </div>
+  );
+}
+
 export function HeroFields({ value, onChange }: { value: HeroBlockData; onChange: (v: HeroBlockData) => void }) {
-  function updateButton(i: number, field: "label" | "href", v: string) {
+  function updateButton(i: number, field: "label" | "labelGu" | "href", v: string) {
     const buttons = value.buttons.map((b, idx) => (idx === i ? { ...b, [field]: v } : b));
     onChange({ ...value, buttons });
   }
 
   return (
     <div className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="hero-heading">Heading</Label>
-        <Input id="hero-heading" value={value.heading} onChange={(e) => onChange({ ...value, heading: e.target.value })} required />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="hero-subtext">Subtext</Label>
-        <Textarea id="hero-subtext" rows={2} value={value.subtext} onChange={(e) => onChange({ ...value, subtext: e.target.value })} />
-      </div>
+      <BilingualField
+        label="Heading"
+        idBase="hero-heading"
+        enValue={value.heading}
+        guValue={value.headingGu}
+        onEnChange={(v) => onChange({ ...value, heading: v })}
+        onGuChange={(v) => onChange({ ...value, headingGu: v })}
+        required
+      />
+      <BilingualTextareaField
+        label="Subtext"
+        idBase="hero-subtext"
+        enValue={value.subtext}
+        guValue={value.subtextGu}
+        onEnChange={(v) => onChange({ ...value, subtext: v })}
+        onGuChange={(v) => onChange({ ...value, subtextGu: v })}
+      />
       <div className="space-y-2">
         <Label>Buttons</Label>
         {value.buttons.map((button, i) => (
-          <div key={i} className="flex gap-2">
-            <Input placeholder="Label" value={button.label} onChange={(e) => updateButton(i, "label", e.target.value)} />
-            <Input placeholder="Link (e.g. /contact)" value={button.href} onChange={(e) => updateButton(i, "href", e.target.value)} />
+          <div key={i} className="space-y-1 rounded-lg border p-2">
+            <div className="flex gap-2">
+              <Input placeholder="Label" value={button.label} onChange={(e) => updateButton(i, "label", e.target.value)} />
+              <Input placeholder="Link (e.g. /contact)" value={button.href} onChange={(e) => updateButton(i, "href", e.target.value)} />
+            </div>
+            <Input
+              placeholder="Label — Gujarati (optional)"
+              value={button.labelGu}
+              onChange={(e) => updateButton(i, "labelGu", e.target.value)}
+              className='font-["Noto_Serif_Gujarati"]'
+            />
             <Button type="button" variant="ghost" size="sm" onClick={() => onChange({ ...value, buttons: value.buttons.filter((_, idx) => idx !== i) })}>
               <X className="size-4" aria-hidden="true" />
+              Remove button
             </Button>
           </div>
         ))}
         {value.buttons.length < 4 ? (
-          <Button type="button" variant="outline" size="sm" onClick={() => onChange({ ...value, buttons: [...value.buttons, { label: "", href: "" }] })}>
+          <Button type="button" variant="outline" size="sm" onClick={() => onChange({ ...value, buttons: [...value.buttons, { label: "", labelGu: "", href: "" }] })}>
             <Plus className="size-4" aria-hidden="true" />
             Add button
           </Button>
@@ -58,13 +158,25 @@ export function HeroFields({ value, onChange }: { value: HeroBlockData; onChange
 export function TextFields({ value, onChange }: { value: TextBlockData; onChange: (v: TextBlockData) => void }) {
   return (
     <div className="space-y-4">
+      <BilingualField
+        label="Heading (optional)"
+        idBase="text-heading"
+        enValue={value.heading ?? ""}
+        guValue={value.headingGu}
+        onEnChange={(v) => onChange({ ...value, heading: v || null })}
+        onGuChange={(v) => onChange({ ...value, headingGu: v })}
+      />
       <div className="space-y-2">
-        <Label htmlFor="text-heading">Heading (optional)</Label>
-        <Input id="text-heading" value={value.heading ?? ""} onChange={(e) => onChange({ ...value, heading: e.target.value || null })} />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="text-body">Body</Label>
-        <Textarea id="text-body" rows={8} value={value.body} onChange={(e) => onChange({ ...value, body: e.target.value })} required />
+        <BilingualTextareaField
+          label="Body"
+          idBase="text-body"
+          rows={8}
+          enValue={value.body}
+          guValue={value.bodyGu}
+          onEnChange={(v) => onChange({ ...value, body: v })}
+          onGuChange={(v) => onChange({ ...value, bodyGu: v })}
+          required
+        />
         <p className="text-xs text-muted-foreground">Leave a blank line between paragraphs.</p>
       </div>
     </div>
@@ -78,20 +190,41 @@ export function CardGridFields({ value, onChange }: { value: CardGridBlockData; 
 
   return (
     <div className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="grid-heading">Heading (optional)</Label>
-        <Input id="grid-heading" value={value.heading ?? ""} onChange={(e) => onChange({ ...value, heading: e.target.value || null })} />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="grid-subtext">Subtext (optional)</Label>
-        <Textarea id="grid-subtext" rows={2} value={value.subtext ?? ""} onChange={(e) => onChange({ ...value, subtext: e.target.value || null })} />
-      </div>
+      <BilingualField
+        label="Heading (optional)"
+        idBase="grid-heading"
+        enValue={value.heading ?? ""}
+        guValue={value.headingGu}
+        onEnChange={(v) => onChange({ ...value, heading: v || null })}
+        onGuChange={(v) => onChange({ ...value, headingGu: v })}
+      />
+      <BilingualTextareaField
+        label="Subtext (optional)"
+        idBase="grid-subtext"
+        enValue={value.subtext ?? ""}
+        guValue={value.subtextGu}
+        onEnChange={(v) => onChange({ ...value, subtext: v || null })}
+        onGuChange={(v) => onChange({ ...value, subtextGu: v })}
+      />
       <div className="space-y-3">
         <Label>Cards</Label>
         {value.cards.map((card, i) => (
           <div key={i} className="space-y-2 rounded-lg border p-3">
             <Input placeholder="Title" value={card.title} onChange={(e) => updateCard(i, { title: e.target.value })} />
+            <Input
+              placeholder="Title — Gujarati (optional)"
+              value={card.titleGu}
+              onChange={(e) => updateCard(i, { titleGu: e.target.value })}
+              className='font-["Noto_Serif_Gujarati"]'
+            />
             <Textarea placeholder="Body" rows={2} value={card.body} onChange={(e) => updateCard(i, { body: e.target.value })} />
+            <Textarea
+              placeholder="Body — Gujarati (optional)"
+              rows={2}
+              value={card.bodyGu}
+              onChange={(e) => updateCard(i, { bodyGu: e.target.value })}
+              className='font-["Noto_Serif_Gujarati"]'
+            />
             <SiteImageUploadField label="Image (optional)" value={card.imageKey} onChange={(imageKey) => updateCard(i, { imageKey })} />
             <Button type="button" variant="ghost" size="sm" onClick={() => onChange({ ...value, cards: value.cards.filter((_, idx) => idx !== i) })}>
               <X className="size-4" aria-hidden="true" />
@@ -104,7 +237,7 @@ export function CardGridFields({ value, onChange }: { value: CardGridBlockData; 
             type="button"
             variant="outline"
             size="sm"
-            onClick={() => onChange({ ...value, cards: [...value.cards, { title: "", body: "", imageKey: null }] })}
+            onClick={() => onChange({ ...value, cards: [...value.cards, { title: "", titleGu: "", body: "", bodyGu: "", imageKey: null }] })}
           >
             <Plus className="size-4" aria-hidden="true" />
             Add card
@@ -164,22 +297,41 @@ export function SliderFields({
               </Button>
             </div>
           </div>
-          <div className="space-y-1">
-            <Label htmlFor={`slide-${i}-kicker`}>Kicker</Label>
-            <Input id={`slide-${i}-kicker`} value={slide.kicker} onChange={(e) => updateSlide(i, { kicker: e.target.value })} required />
-          </div>
-          <div className="space-y-1">
-            <Label htmlFor={`slide-${i}-title`}>Title</Label>
-            <Input id={`slide-${i}-title`} value={slide.title} onChange={(e) => updateSlide(i, { title: e.target.value })} required />
-          </div>
-          <div className="space-y-1">
-            <Label htmlFor={`slide-${i}-subtext`}>Subtext</Label>
-            <Textarea id={`slide-${i}-subtext`} rows={2} value={slide.subtext} onChange={(e) => updateSlide(i, { subtext: e.target.value })} />
-          </div>
-          <div className="space-y-1">
-            <Label htmlFor={`slide-${i}-cta`}>CTA label</Label>
-            <Input id={`slide-${i}-cta`} value={slide.ctaLabel} onChange={(e) => updateSlide(i, { ctaLabel: e.target.value })} required />
-          </div>
+          <BilingualField
+            label="Kicker"
+            idBase={`slide-${i}-kicker`}
+            enValue={slide.kicker}
+            guValue={slide.kickerGu}
+            onEnChange={(v) => updateSlide(i, { kicker: v })}
+            onGuChange={(v) => updateSlide(i, { kickerGu: v })}
+            required
+          />
+          <BilingualField
+            label="Title"
+            idBase={`slide-${i}-title`}
+            enValue={slide.title}
+            guValue={slide.titleGu}
+            onEnChange={(v) => updateSlide(i, { title: v })}
+            onGuChange={(v) => updateSlide(i, { titleGu: v })}
+            required
+          />
+          <BilingualTextareaField
+            label="Subtext"
+            idBase={`slide-${i}-subtext`}
+            enValue={slide.subtext}
+            guValue={slide.subtextGu}
+            onEnChange={(v) => updateSlide(i, { subtext: v })}
+            onGuChange={(v) => updateSlide(i, { subtextGu: v })}
+          />
+          <BilingualField
+            label="CTA label"
+            idBase={`slide-${i}-cta`}
+            enValue={slide.ctaLabel}
+            guValue={slide.ctaLabelGu}
+            onEnChange={(v) => updateSlide(i, { ctaLabel: v })}
+            onGuChange={(v) => updateSlide(i, { ctaLabelGu: v })}
+            required
+          />
           <div className="space-y-1">
             <Label htmlFor={`slide-${i}-category-trigger`}>Category</Label>
             <Select value={slide.category} onValueChange={(v) => updateSlide(i, { category: v ?? "" })}>
@@ -213,7 +365,17 @@ export function SliderFields({
               ...value,
               slides: [
                 ...value.slides,
-                { kicker: "", title: "", subtext: "", ctaLabel: "", category: categories[0]?.slug ?? "" },
+                {
+                  kicker: "",
+                  kickerGu: "",
+                  title: "",
+                  titleGu: "",
+                  subtext: "",
+                  subtextGu: "",
+                  ctaLabel: "",
+                  ctaLabelGu: "",
+                  category: categories[0]?.slug ?? "",
+                },
               ],
             })
           }
@@ -229,17 +391,34 @@ export function SliderFields({
 export function CtaBandFields({ value, onChange }: { value: CtaBandBlockData; onChange: (v: CtaBandBlockData) => void }) {
   return (
     <div className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="cta-heading">Heading</Label>
-        <Input id="cta-heading" value={value.heading} onChange={(e) => onChange({ ...value, heading: e.target.value })} required />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="cta-subtext">Subtext</Label>
-        <Textarea id="cta-subtext" rows={2} value={value.subtext} onChange={(e) => onChange({ ...value, subtext: e.target.value })} />
-      </div>
-      <div className="flex gap-2">
-        <Input placeholder="Button label" value={value.button.label} onChange={(e) => onChange({ ...value, button: { ...value.button, label: e.target.value } })} />
-        <Input placeholder="Button link" value={value.button.href} onChange={(e) => onChange({ ...value, button: { ...value.button, href: e.target.value } })} />
+      <BilingualField
+        label="Heading"
+        idBase="cta-heading"
+        enValue={value.heading}
+        guValue={value.headingGu}
+        onEnChange={(v) => onChange({ ...value, heading: v })}
+        onGuChange={(v) => onChange({ ...value, headingGu: v })}
+        required
+      />
+      <BilingualTextareaField
+        label="Subtext"
+        idBase="cta-subtext"
+        enValue={value.subtext}
+        guValue={value.subtextGu}
+        onEnChange={(v) => onChange({ ...value, subtext: v })}
+        onGuChange={(v) => onChange({ ...value, subtextGu: v })}
+      />
+      <div className="space-y-1">
+        <div className="flex gap-2">
+          <Input placeholder="Button label" value={value.button.label} onChange={(e) => onChange({ ...value, button: { ...value.button, label: e.target.value } })} />
+          <Input placeholder="Button link" value={value.button.href} onChange={(e) => onChange({ ...value, button: { ...value.button, href: e.target.value } })} />
+        </div>
+        <Input
+          placeholder="Button label — Gujarati (optional)"
+          value={value.button.labelGu}
+          onChange={(e) => onChange({ ...value, button: { ...value.button, labelGu: e.target.value } })}
+          className='font-["Noto_Serif_Gujarati"]'
+        />
       </div>
     </div>
   );

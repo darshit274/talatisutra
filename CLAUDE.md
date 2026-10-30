@@ -85,8 +85,30 @@ starting any phase.
 
 ## Out of scope — do not build
 
-Payment gateway, e-commerce, bulk email, live chat, mobile app, multi-language,
-analytics, SEO tooling.
+Payment gateway, e-commerce, bulk email, live chat, mobile app, analytics,
+SEO tooling.
+
+## Gujarati/English bilingual content
+
+The header's English/ગુજરાતી toggle (`app/(marketing)/_components/marketing-header.tsx`)
+is real, not decorative — client-requested 2026-10-30, after initially shipping as a
+visual-only placeholder (the toggle used to log "this site does not yet translate";
+see `docs/superpowers/specs/2026-10-17-talatisutra-classical-redesign-design.md` for
+that original scoping). Scope is **admin-managed content only**: every translatable
+field on SiteSettings, ContentBlock (all 5 block types), Article and ArticleCategory
+has an optional `*Gu` counterpart (nullable column, or a sibling JSON key for
+ContentBlock), entered side-by-side in the admin forms via
+`components/admin/bilingual-input.tsx` / `bilingual-textarea.tsx`. Static UI chrome —
+nav labels, button text, auth form labels — stays English-only; translating that
+would mean a hardcoded string dictionary, which was explicitly left out of this round.
+
+The current locale is a cookie (`lib/i18n-server.ts`'s `getLocale`/`setLocaleCookie`),
+read server-side and passed down as a `locale` prop — never read from a client
+component directly, since `next/headers` can't be imported there (that's why
+`pickLocale`/`Locale` live in the dependency-free `lib/i18n.ts`, split from the
+cookie-reading `lib/i18n-server.ts`). Every render site picks text with
+`pickLocale(locale, enValue, guValue)`: Gujarati if the visitor chose it and a
+translation was actually entered, English otherwise — never blank.
 
 <!-- BEGIN:nextjs-agent-rules -->
 

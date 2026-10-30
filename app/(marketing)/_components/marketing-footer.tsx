@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { getArticleCategories } from "@/lib/queries/article-categories";
 import { getSiteSettings } from "@/lib/queries/site-settings";
+import { pickLocale } from "@/lib/i18n";
+import { getLocale } from "@/lib/i18n-server";
 
 const NAV_LINKS = [
   { href: "/", label: "Home" },
@@ -12,7 +14,11 @@ const NAV_LINKS = [
 
 export async function MarketingFooter() {
   const year = new Date().getFullYear();
-  const [settings, categories] = await Promise.all([getSiteSettings(), getArticleCategories()]);
+  const [settings, categories, locale] = await Promise.all([
+    getSiteSettings(),
+    getArticleCategories(),
+    getLocale(),
+  ]);
 
   return (
     <footer className="border-t">
@@ -53,7 +59,7 @@ export async function MarketingFooter() {
                   href={`/articles?category=${category.slug}`}
                   className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                 >
-                  {category.name}
+                  {pickLocale(locale, category.name, category.nameGu)}
                 </Link>
               ))}
             </nav>
@@ -67,7 +73,7 @@ export async function MarketingFooter() {
             <br />
             {settings.contactPhone}
             <br />
-            {settings.contactAddress}
+            {pickLocale(locale, settings.contactAddress, settings.contactAddressGu)}
           </p>
         </div>
       </div>

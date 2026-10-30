@@ -1,4 +1,5 @@
 import { getCurrentUser } from "@/lib/auth/session";
+import { getLocale } from "@/lib/i18n-server";
 import { AppShell } from "./_components/app-shell";
 import { EmployeeShell } from "./_components/employee-shell";
 
@@ -21,5 +22,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   // Covers both a logged-in employee and the logged-out case (the page itself is
   // about to redirect to /login via requireUser()/requireAdmin() — this just avoids a
   // flash of a bare/unstyled page while that happens).
-  return <EmployeeShell user={user}>{children}</EmployeeShell>;
+  const locale = await getLocale();
+  return <EmployeeShell user={user} locale={locale}>{children}</EmployeeShell>;
 }

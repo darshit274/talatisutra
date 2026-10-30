@@ -23,8 +23,11 @@ export async function updateSiteSettings(
     contactEmail: formData.get("contactEmail"),
     contactPhone: formData.get("contactPhone"),
     contactHours: formData.get("contactHours"),
+    contactHoursGu: formData.get("contactHoursGu"),
     contactAddress: formData.get("contactAddress"),
+    contactAddressGu: formData.get("contactAddressGu"),
     aboutDisclaimer: formData.get("aboutDisclaimer"),
+    aboutDisclaimerGu: formData.get("aboutDisclaimerGu"),
     aboutPhotoKey: formData.get("aboutPhotoKey") || null,
     contactMapImageKey: formData.get("contactMapImageKey") || null,
   });

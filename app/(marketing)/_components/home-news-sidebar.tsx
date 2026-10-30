@@ -1,7 +1,8 @@
 import Link from "next/link";
 import type { Article } from "@prisma/client";
+import { pickLocale, type Locale } from "@/lib/i18n";
 
-export function HomeNewsSidebar({ articles }: { articles: Article[] }) {
+export function HomeNewsSidebar({ articles, locale }: { articles: Article[]; locale: Locale }) {
   return (
     <aside className="rounded-lg border p-6">
       <h2 className="flex items-center gap-2 font-heading text-lg font-medium">
@@ -20,7 +21,7 @@ export function HomeNewsSidebar({ articles }: { articles: Article[] }) {
                     year: "numeric",
                   })}
                 </p>
-                <p className="mt-1 text-sm font-medium">{article.title}</p>
+                <p className="mt-1 text-sm font-medium">{pickLocale(locale, article.title, article.titleGu)}</p>
               </Link>
             </li>
           ))}

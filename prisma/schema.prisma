@@ -150,16 +150,19 @@ model Category {
 }
 
 model ArticleCategory {
-  id                  String    @id @default(cuid())
-  name                String    @unique
-  slug                String    @unique
-  icon                String
-  shortDescription    String    @db.Text
-  servicesDescription String    @db.Text
-  tags                Json
-  sortOrder           Int       @default(0)
-  createdAt           DateTime  @default(now())
-  articles            Article[]
+  id                    String    @id @default(cuid())
+  name                  String    @unique
+  nameGu                String?
+  slug                  String    @unique
+  icon                  String
+  shortDescription      String    @db.Text
+  shortDescriptionGu    String?   @db.Text
+  servicesDescription   String    @db.Text
+  servicesDescriptionGu String?   @db.Text
+  tags                  Json
+  sortOrder             Int       @default(0)
+  createdAt             DateTime  @default(now())
+  articles              Article[]
 
   @@index([sortOrder])
 }
@@ -182,9 +185,12 @@ model SiteSettings {
   contactEmail       String
   contactPhone       String
   contactHours       String
+  contactHoursGu     String?
   contactAddress     String
+  contactAddressGu   String?
   aboutPhotoKey      String?
   aboutDisclaimer    String   @db.Text
+  aboutDisclaimerGu  String?  @db.Text
   contactMapImageKey String?
   updatedAt          DateTime @updatedAt
   updatedById        String?
@@ -240,8 +246,11 @@ model Article {
   categoryId  String
   category    ArticleCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   title       String          @db.VarChar(200)
+  titleGu     String?         @db.VarChar(200)
   excerpt     String          @db.VarChar(300)
+  excerptGu   String?         @db.VarChar(300)
   body        String          @db.Text
+  bodyGu      String?         @db.Text
   pdfKey      String?
   pdfLabel    String?
   publishedAt DateTime        @default(now())

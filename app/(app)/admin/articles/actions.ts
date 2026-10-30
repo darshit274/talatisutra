@@ -19,8 +19,11 @@ function parseArticleInput(formData: FormData) {
   return articleInputSchema.safeParse({
     categoryId: formData.get("categoryId"),
     title: formData.get("title"),
+    titleGu: formData.get("titleGu"),
     excerpt: formData.get("excerpt"),
+    excerptGu: formData.get("excerptGu"),
     body: formData.get("body"),
+    bodyGu: formData.get("bodyGu"),
     pdfKey: formData.get("pdfKey") || null,
     pdfLabel: formData.get("pdfLabel") || null,
   });

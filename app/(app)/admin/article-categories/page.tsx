@@ -94,9 +94,12 @@ export default async function AdminArticleCategoriesPage({
                         mode="edit"
                         id={category.id}
                         name={category.name}
+                        nameGu={category.nameGu ?? ""}
                         slug={category.slug}
                         shortDescription={category.shortDescription}
+                        shortDescriptionGu={category.shortDescriptionGu ?? ""}
                         servicesDescription={category.servicesDescription}
+                        servicesDescriptionGu={category.servicesDescriptionGu ?? ""}
                         tags={category.tags as string[]}
                       />
                       <DeleteConfirmButton

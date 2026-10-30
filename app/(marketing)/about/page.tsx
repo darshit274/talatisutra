@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { getPageBlocks } from "@/lib/queries/content";
 import { getSiteSettings } from "@/lib/queries/site-settings";
 import { BlockRenderer } from "@/components/content/block-renderer";
+import { pickLocale } from "@/lib/i18n";
+import { getLocale } from "@/lib/i18n-server";
 
 export const metadata: Metadata = {
   title: "About",
@@ -9,10 +11,10 @@ export const metadata: Metadata = {
 };
 
 export default async function AboutPage() {
-  const [blocks, settings] = await Promise.all([getPageBlocks("ABOUT"), getSiteSettings()]);
+  const [blocks, settings, locale] = await Promise.all([getPageBlocks("ABOUT"), getSiteSettings(), getLocale()]);
   return (
     <>
-      <BlockRenderer blocks={blocks} />
+      <BlockRenderer blocks={blocks} locale={locale} />
 
       {/* .plate-style placeholder, replaced by the admin-uploaded photo once set
           (BUILD-PLAN §14 placeholder-now-real-later convention). */}
@@ -32,7 +34,9 @@ export default async function AboutPage() {
       </div>
 
       <div className="mx-auto max-w-3xl px-4 py-16">
-        <p className="text-sm text-muted-foreground">{settings.aboutDisclaimer}</p>
+        <p className="text-sm text-muted-foreground">
+          {pickLocale(locale, settings.aboutDisclaimer, settings.aboutDisclaimerGu)}
+        </p>
       </div>
     </>
   );
